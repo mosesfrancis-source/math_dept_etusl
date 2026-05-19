@@ -5,13 +5,12 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Security ──────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-insecure-i_wq45j@%$@pso53a44f8ix#-#8!97w#e-iln&j%+2og7v^#0(',
-)
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+SECRET_KEY = 'django-insecure-i_wq45j@%$@pso53a44f8ix#-#8!97w#e-iln&j%+2og7v^#0('
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'mathdeptetusl-production.up.railway.app']
+
+CSRF_TRUSTED_ORIGINS = ['https://mathdeptetusl-production.up.railway.app']
 
 # ── Apps ──────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -27,7 +26,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',       # serve static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -57,24 +56,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'etu_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────
-_DATABASE_URL = os.environ.get('DATABASE_URL')
 _ON_RAILWAY = bool(
     os.environ.get('RAILWAY_ENVIRONMENT_NAME') or
-    os.environ.get('RAILWAY_ENVIRONMENT') or
     os.environ.get('RAILWAY_SERVICE_NAME')
 )
 
-if _DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(_DATABASE_URL, conn_max_age=600)}
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)}
+elif _ON_RAILWAY:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('PGDATABASE', 'railway'),
+            'USER': os.environ.get('PGUSER', 'postgres'),
+            'PASSWORD': os.environ.get('PGPASSWORD', ''),
+            'HOST': os.environ.get('PGHOST', 'postgres.railway.internal'),
+            'PORT': os.environ.get('PGPORT', '5432'),
+        }
+    }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('PGDATABASE', 'railway' if _ON_RAILWAY else 'etu_math_portal'),
-            'USER': os.environ.get('PGUSER', 'postgres'),
-            'PASSWORD': os.environ.get('PGPASSWORD', os.environ.get('DB_PASSWORD', 'Mojo2023@')),
-            'HOST': os.environ.get('PGHOST', 'postgres.railway.internal' if _ON_RAILWAY else os.environ.get('DB_HOST', 'localhost')),
-            'PORT': os.environ.get('PGPORT', '5432'),
+            'NAME': 'etu_math_portal',
+            'USER': 'postgres',
+            'PASSWORD': 'Mojo2023@',
+            'HOST': 'localhost',
+            'PORT': '5432',
         }
     }
 
@@ -104,11 +112,13 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── Email ─────────────────────────────────────────────────────────
-EMAIL_BACKEND = os.environ.get(
-    'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend',
-)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@etu.edu.sl'
+
+# ── Auth redirects ────────────────────────────────────────────────
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 # ── Misc ──────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
