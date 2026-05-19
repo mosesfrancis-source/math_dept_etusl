@@ -12,7 +12,7 @@ class Command(BaseCommand):
             self.stdout.write('Superuser already exists, skipping.')
             return
 
-        username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+        username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'mojo')
         email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@etu.edu.sl')
         password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'Admin@ETU2024')
 
