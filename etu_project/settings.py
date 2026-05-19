@@ -64,11 +64,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'etu_math_portal',
-            'USER': 'postgres',
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': '5432',
+            'NAME': os.environ.get('PGDATABASE', 'etu_math_portal'),
+            'USER': os.environ.get('PGUSER', 'postgres'),
+            'PASSWORD': os.environ.get('PGPASSWORD', os.environ.get('DB_PASSWORD', 'Mojo2023@')),
+            'HOST': os.environ.get('PGHOST', os.environ.get('DB_HOST', 'localhost')),
+            'PORT': os.environ.get('PGPORT', '5432'),
         }
     }
 
