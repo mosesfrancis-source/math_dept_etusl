@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Faculty — ETU Mathematics Department{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+    <div class="page-hero-eyebrow">Our People</div>
+    <h1 class="page-hero-title">Faculty &amp; Staff</h1>
+    <p class="page-hero-sub">Meet the dedicated academic staff of the Department of Mathematics, Eastern Technical University of Sierra Leone.</p>
+</div>
+
+<!-- Known staff with photos -->
+<div class="etu-card mb-4">
+    <div class="etu-card-hdr"><span><i class="bi bi-people-fill me-2"></i>Department Leadership</span></div>
+    <div class="etu-card-body">
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <div class="faculty-grid-card">
+                    <div class="faculty-av mb-2">
+                        <img src="{% static 'images/Hod.JPG' %}" alt="Mohamed Alpha">
+                    </div>
+                    <div class="faculty-role-tag">Head of Department</div>
+                    <div class="faculty-name-tag">Mohamed Alpha</div>
+                    <div class="info-card-text mt-1">Department of Mathematics</div>
+                    <a href="mailto:mohamedalpha@etusl.edu.sl" class="btn btn-sm mt-2 staff-card-pin-btn">
+                        <i class="bi bi-envelope me-1"></i>Contact
+                    </a>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="faculty-grid-card">
+                    <div class="faculty-av mb-2">
+                        <img src="{% static 'images/mr.saffa.jpg' %}" alt="Saffa Sheku">
+                    </div>
+                    <div class="faculty-role-tag">Senior Lecturer</div>
+                    <div class="faculty-name-tag">Saffa Sheku</div>
+                    <div class="info-card-text mt-1">Department of Mathematics</div>
+                    <a href="mailto:saffasheku@etusl.edu.sl" class="btn btn-sm mt-2 staff-card-pin-btn">
+                        <i class="bi bi-envelope me-1"></i>Contact
+                    </a>
+                </div>
+            </div>
+            {% for member in staff %}
+            {% if member.username != 'mojo' %}
+            <div class="col-sm-6 col-md-3">
+                <div class="faculty-grid-card">
+                    <div class="faculty-av mb-2">
+                        {% if member.profile_picture %}
+                        <img src="{{ member.profile_picture.url }}" alt="{{ member.get_full_name }}">
+                        {% else %}
+                        <i class="bi bi-person-fill"></i>
+                        {% endif %}
+                    </div>
+                    <div class="faculty-role-tag">{{ member.get_role_display }}</div>
+                    <div class="faculty-name-tag">{{ member.get_full_name|default:member.username }}</div>
+                    {% if member.lecturer_profile.specialization %}
+                    <div class="info-card-text mt-1">{{ member.lecturer_profile.specialization }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Join us CTA -->
+<div class="etu-card">
+    <div class="etu-card-hdr"><span><i class="bi bi-person-workspace me-2"></i>Join Our Faculty</span></div>
+    <div class="etu-card-body info-card-text">
+        <p>Are you a qualified mathematician or mathematics educator interested in joining the Department of Mathematics at ETUSL? We welcome applications from experienced academics and researchers.</p>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="mailto:registrar@etusl.edu.sl" class="btn btn-primary cta-btn">
+                <i class="bi bi-envelope me-1"></i>Contact the Registrar
+            </a>
+            <a href="{% url 'register_lecturer' %}" class="btn btn-outline-secondary cta-btn">
+                <i class="bi bi-person-plus me-1"></i>Lecturer Registration
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

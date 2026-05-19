@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var ctx = document.getElementById('gpaChart');
+    if (!ctx) return;
+    var labels = {{ trend_labels|default:'[]' }};
+    var values = {{ trend_values|default:'[]' }};
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,.12)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: '#3b82f6',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: c => 'GPA: ' + c.raw } }
+            },
+            scales: {
+                y: { min: 0, max: 4, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+
+{% if request.user.role == 'student' %}
+<!-- ══════════════ STUDENT DASHBOARD ══════════════ -->
+
+<!-- Hero -->
+<div class="hero-sec">
+    <div class="row g-3 align-items-center">
+        <div class="col-lg-4">
+            <div class="hero-eyebrow">Welcome to the</div>
+            <h2 class="hero-title">Department of<br>Mathematics</h2>
+            <div class="hero-sub mb-2">Eastern Technical University, Sierra Leone</div>
+            <p class="hero-desc">Developing strong mathematical minds for innovation, research, technology and national development.</p>
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                <a href="#" class="btn btn-sm" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);">Explore Programs</a>
+                <a href="#" class="btn btn-sm" style="background:var(--gold);color:var(--navy);font-weight:700;">Learn More</a>
+            </div>
+        </div>
+
+        <!-- Building placeholder -->
+        <div class="col-lg-3 d-none d-lg-block" style="position:relative;z-index:1;">
+            <div style="height:160px;border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.14));border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-building" style="font-size:4rem;color:rgba(255,255,255,.3);"></i>
+            </div>
+        </div>
+
+        <!-- Person cards + Glance -->
+        <div class="col-lg-5" style="position:relative;z-index:1;">
+            <div class="row g-2">
+                {% if hod %}
+                <div class="col-6">
+                    <div class="person-card">
+                        <div class="person-av">
+                            {% if hod.profile_picture %}
+                            <img src="{{ hod.profile_picture.url }}" alt="{{ hod.get_full_name }}">
+                            {% else %}
+                            <i class="bi bi-person-fill"></i>
+                            {% endif %}
+                        </div>
+                        <div class="person-role">HOD (Head of Department)</div>
+                        <div class="person-name">{{ hod.get_full_name }}</div>
+                        <div style="font-size:.62rem;color:rgba(255,255,255,.5);margin-top:2px;">Highest honor and contact</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="col-{% if hod %}6{% else %}12{% endif %}">
+                    <div class="person-card h-100">
+                        <div class="person-role mb-2">Department at a Glance</div>
+                        <div class="row g-1 mt-1">
+                            <div class="col-6" style="text-align:center;padding:.4rem;">
+                                <i class="bi bi-book" style="font-size:.9rem;color:var(--teal);display:block;"></i>
+                                <div class="glance-val">4</div>
+                                <div class="glance-lbl">Programs</div>
+                            </div>
+                            <div class="col-6" style="text-align:center;padding:.4rem;">
+                                <i class="bi bi-people" style="font-size:.9rem;color:var(--gold);display:block;"></i>
+                                <div class="glance-val">{{ total_faculty }}</div>
+                                <div class="glance-lbl">Faculty</div>
+                            </div>
+                            <div class="col-6" style="text-align:center;padding:.4rem;">
+                                <i class="bi bi-mortarboard" style="font-size:.9rem;color:#4ade80;display:block;"></i>
+                                <div class="glance-val">{{ total_students }}</div>
+                                <div class="glance-lbl">Students</div>
+                            </div>
+                            <div class="col-6" style="text-align:center;padding:.4rem;">
+                                <i class="bi bi-flask" style="font-size:.9rem;color:#f87171;display:block;"></i>
+                                <div class="glance-val">8</div>
+                                <div class="glance-lbl">Research</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-blue">
+            <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div>
+                <div class="stat-val">{{ gpa }}</div>
+                <div class="stat-lbl">CGPA</div>
+                <div class="stat-sub">{{ gpa_standing }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-green">
+            <div class="stat-icon"><i class="bi bi-calculator-fill"></i></div>
+            <div>
+                <div class="stat-val">{{ total_credits }}</div>
+                <div class="stat-lbl">Total Credits</div>
+                <div class="stat-sub">This Semester</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-purple">
+            <div class="stat-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <div>
+                <div class="stat-val">{{ registrations|length }}</div>
+                <div class="stat-lbl">Registered Courses</div>
+                <div class="stat-sub">This Semester</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-orange">
+            <div class="stat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+            <div>
+                <div class="stat-val" style="font-size:1.15rem;">{{ academic_year }}</div>
+                <div class="stat-lbl">Academic Year</div>
+                <div class="stat-sub">Current Session</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Announcement -->
+<div class="ann-bar mb-3">
+    <i class="bi bi-megaphone-fill flex-shrink-0" style="font-size:1rem;color:#d97706;"></i>
+    <div class="flex-grow-1">
+        <strong>Latest Announcement:</strong>
+        Mid-Semester Test begins on 20th May, 2025. Check the timetable in your dashboard.
+        <a href="#" class="ms-2 fw-semibold" style="font-size:.78rem;">View all announcements →</a>
+    </div>
+    <button type="button" class="btn-close btn-sm flex-shrink-0"
+        onclick="this.closest('.ann-bar').style.display='none'" aria-label="Close"></button>
+</div>
+
+<!-- Main data row -->
+<div class="row g-3 mb-3">
+    <!-- Registered Courses -->
+    <div class="col-xl-5 col-lg-5">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr">
+                <span>
+                    <i class="bi bi-collection-fill me-2" style="color:#1e3a8a;"></i>My Registered Courses
+                    {% if registrations %}
+                    <span class="text-muted fw-normal" style="font-size:.75rem;">(Semester {{ registrations.0.course.semester }})</span>
+                    {% endif %}
+                </span>
+                <a href="{% url 'my_courses' %}" style="font-size:.75rem;color:#3b82f6;text-decoration:none;">View All</a>
+            </div>
+            {% if registrations %}
+            <div class="table-responsive">
+                <table class="table etu-tbl">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course Title</th>
+                            <th>Cr.Hrs</th>
+                            <th>Lecturer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registrations %}
+                        <tr>
+                            <td><span class="badge" style="background:#1e3a8a;font-size:.72rem;">{{ reg.course.code }}</span></td>
+                            <td style="font-size:.82rem;">{{ reg.course.name }}</td>
+                            <td style="font-weight:600;">{{ reg.course.credits }}</td>
+                            <td style="color:#6b7280;font-size:.78rem;">
+                                {% if reg.course.lecturer %}{{ reg.course.lecturer.get_full_name|truncatechars:14 }}{% else %}TBA{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="total-row">
+                            <td colspan="2" class="text-primary">Total Credit Hours</td>
+                            <td colspan="2" class="text-primary">{{ total_credits }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="etu-card-body text-center py-5" style="color:#9ca3af;">
+                <i class="bi bi-journal-x d-block" style="font-size:2.5rem;opacity:.4;margin-bottom:.5rem;"></i>
+                No courses registered yet.
+                <br>
+                <a href="{% url 'available_courses' %}" class="btn btn-sm btn-primary mt-2" style="font-size:.8rem;">Browse Courses</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- GPA Trend -->
+    <div class="col-xl-4 col-lg-4">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr">
+                <span><i class="bi bi-graph-up me-2" style="color:#10b981;"></i>GPA Trend</span>
+            </div>
+            <div class="etu-card-body">
+                {% if trend_values and trend_values != '[]' %}
+                <canvas id="gpaChart" height="150"></canvas>
+                {% else %}
+                <div class="text-center py-3" style="color:#9ca3af;">
+                    <i class="bi bi-graph-up d-block" style="font-size:2rem;opacity:.3;"></i>
+                    <small>No grade data yet</small>
+                </div>
+                {% endif %}
+                <div class="text-center mt-3 p-3 rounded" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                    <div style="font-size:.72rem;color:#6b7280;">Current CGPA</div>
+                    <div style="font-size:1.8rem;font-weight:800;color:#059669;line-height:1;">{{ gpa }}</div>
+                    <span style="font-size:.72rem;background:#dcfce7;color:#166534;padding:.2rem .6rem;border-radius:20px;font-weight:600;">
+                        <i class="bi bi-check-circle-fill me-1"></i>{{ gpa_standing }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Results -->
+    <div class="col-xl-3 col-lg-3">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr">
+                <span><i class="bi bi-trophy-fill me-2" style="color:#f59e0b;"></i>Recent Results</span>
+                <a href="{% url 'my_grades' %}" style="font-size:.75rem;color:#3b82f6;text-decoration:none;">View All</a>
+            </div>
+            {% if recent_results %}
+            <div class="table-responsive">
+                <table class="table etu-tbl">
+                    <thead>
+                        <tr><th>Code</th><th>Grade</th><th>GP</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for gr in recent_results %}
+                        <tr>
+                            <td>
+                                <div style="font-size:.78rem;font-weight:600;">{{ gr.registration.course.code }}</div>
+                                <div style="font-size:.68rem;color:#6b7280;">{{ gr.registration.course.name|truncatechars:16 }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if gr.letter_grade == 'A' %}success{% elif gr.letter_grade == 'F' %}danger{% elif gr.letter_grade == 'D' %}warning text-dark{% else %}primary{% endif %}"
+                                    style="font-size:.72rem;">{{ gr.letter_grade }}</span>
+                            </td>
+                            <td style="font-weight:700;font-size:.83rem;">{{ gr.grade_point }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="etu-card-body text-center py-5" style="color:#9ca3af;">
+                <i class="bi bi-clipboard-x d-block" style="font-size:2rem;opacity:.4;margin-bottom:.5rem;"></i>
+                <small>No results yet</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links + Events -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="etu-card">
+            <div class="etu-card-hdr">
+                <span><i class="bi bi-lightning-fill me-2" style="color:#f59e0b;"></i>Quick Links</span>
+            </div>
+            <div class="etu-card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="#" class="q-link"><i class="bi bi-calendar3" style="color:#1e3a8a;"></i>View Timetable</a>
+                    <a href="#" class="q-link"><i class="bi bi-credit-card" style="color:#059669;"></i>Pay School Fees</a>
+                    <a href="#" class="q-link"><i class="bi bi-download" style="color:#7c3aed;"></i>Download Resources</a>
+                    <a href="{% url 'available_courses' %}" class="q-link"><i class="bi bi-clipboard-check" style="color:#d97706;"></i>Exam Schedule</a>
+                    <a href="#" class="q-link"><i class="bi bi-envelope-open" style="color:#dc2626;"></i>Request Letter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="etu-card">
+            <div class="etu-card-hdr">
+                <span><i class="bi bi-calendar-event-fill me-2" style="color:#0ea5e9;"></i>Upcoming Events</span>
+            </div>
+            <div class="etu-card-body">
+                <div class="d-flex flex-column gap-3">
+                    {% for ev in events|default:'' %}{% empty %}
+                    <!-- Static sample events -->
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="ev-badge"><div class="ev-m">MAY</div><div class="ev-d">20</div></div>
+                        <div>
+                            <div style="font-size:.83rem;font-weight:600;">Mid-Semester Tests Begin</div>
+                            <div style="font-size:.72rem;color:#6b7280;">All Day</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="ev-badge" style="background:#1e3a8a;"><div class="ev-m">MAY</div><div class="ev-d">25</div></div>
+                        <div>
+                            <div style="font-size:.83rem;font-weight:600;">Numerical Methods Seminar</div>
+                            <div style="font-size:.72rem;color:#6b7280;">10:00 AM – Main Lecture Hall</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="ev-badge" style="background:#065f46;"><div class="ev-m">MAY</div><div class="ev-d">30</div></div>
+                        <div>
+                            <div style="font-size:.83rem;font-weight:600;">Maths Students Meeting</div>
+                            <div style="font-size:.72rem;color:#6b7280;">2:00 PM – Seminar Room</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="ev-badge" style="background:#92400e;"><div class="ev-m">JUN</div><div class="ev-d">10</div></div>
+                        <div>
+                            <div style="font-size:.83rem;font-weight:600;">End of Semester</div>
+                            <div style="font-size:.72rem;color:#6b7280;">All Day</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% elif request.user.role == 'lecturer' or request.user.role == 'hod' %}
+<!-- ══════════════ LECTURER / HOD DASHBOARD ══════════════ -->
+<div class="mb-3">
+    <h4 class="mb-0">Welcome back, {{ request.user.get_full_name }}</h4>
+    <span class="badge" style="background:#1e3a8a;">{{ request.user.role|capfirst }}</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-6">
+        <div class="stat-card sc-blue">
+            <div class="stat-icon"><i class="bi bi-easel-fill"></i></div>
+            <div>
+                <div class="stat-val">{{ courses|length }}</div>
+                <div class="stat-lbl">Courses Teaching</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-6">
+        <div class="stat-card sc-orange">
+            <div class="stat-icon"><i class="bi bi-pencil-square"></i></div>
+            <div>
+                <div class="stat-val">{{ pending_grades }}</div>
+                <div class="stat-lbl">Grades Pending</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-6">
+        <div class="stat-card sc-green">
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="stat-val">{{ total_students }}</div>
+                <div class="stat-lbl">Dept. Students</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="etu-card">
+            <div class="etu-card-hdr">
+                <span><i class="bi bi-easel me-2" style="color:#1e3a8a;"></i>My Courses</span>
+                <a href="{% url 'lecturer_courses' %}" style="font-size:.75rem;color:#3b82f6;text-decoration:none;">View All</a>
+            </div>
+            {% if courses %}
+            <div class="table-responsive">
+                <table class="table etu-tbl">
+                    <thead><tr><th>Code</th><th>Course</th><th>Enrolled</th><th>Pending Grades</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for c in courses %}
+                        <tr>
+                            <td><span class="badge" style="background:#1e3a8a;">{{ c.code }}</span></td>
+                            <td>{{ c.name }}</td>
+                            <td><span class="badge bg-{% if c.is_full %}danger{% else %}success{% endif %}">{{ c.enrolled_count }}/{{ c.max_students }}</span></td>
+                            <td>—</td>
+                            <td>
+                                <a href="{% url 'course_students' c.id %}" class="btn btn-sm btn-outline-primary"
+                                    aria-label="View students for {{ c.code }}">
+                                    <i class="bi bi-people"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="etu-card-body text-center py-4" style="color:#9ca3af;">No courses assigned yet.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-lightning-fill me-2" style="color:#f59e0b;"></i>Quick Actions</span></div>
+            <div class="etu-card-body d-grid gap-2">
+                <a href="{% url 'lecturer_courses' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-easel me-1"></i>My Courses &amp; Grading</a>
+                {% if request.user.role == 'hod' %}
+                <a href="{% url 'manage_courses' %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-gear me-1"></i>Manage All Courses</a>
+                <a href="{% url 'add_course' %}" class="btn btn-outline-success btn-sm"><i class="bi bi-plus-circle me-1"></i>Add New Course</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% elif request.user.role == 'admin' %}
+<!-- ══════════════ ADMIN DASHBOARD ══════════════ -->
+<div class="mb-3">
+    <h4 class="mb-0">Welcome back, {{ request.user.get_full_name }}</h4>
+    <span class="badge bg-secondary">Administrator</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-blue">
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div><div class="stat-val">{{ total_students }}</div><div class="stat-lbl">Students</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-green">
+            <div class="stat-icon"><i class="bi bi-person-workspace"></i></div>
+            <div><div class="stat-val">{{ total_lecturers }}</div><div class="stat-lbl">Lecturers</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-purple">
+            <div class="stat-icon"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <div><div class="stat-val">{{ total_courses }}</div><div class="stat-lbl">Active Courses</div></div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card sc-orange">
+            <div class="stat-icon"><i class="bi bi-clipboard-check-fill"></i></div>
+            <div><div class="stat-val">{{ total_registrations }}</div><div class="stat-lbl">Registrations</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-lightning-fill me-2" style="color:#f59e0b;"></i>Quick Links</span></div>
+            <div class="etu-card-body d-grid gap-2">
+                <a href="{% url 'manage_courses' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-gear me-1"></i>Manage Courses</a>
+                <a href="{% url 'add_course' %}" class="btn btn-outline-success btn-sm"><i class="bi bi-plus-circle me-1"></i>Add New Course</a>
+                <a href="/admin/" class="btn btn-outline-dark btn-sm"><i class="bi bi-shield-lock me-1"></i>Django Admin Panel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

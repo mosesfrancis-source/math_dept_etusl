@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Lecturer Profile — ETU Portal{% endblock %}
+{% block content %}
+
+<h4 class="mb-4"><i class="bi bi-person-circle me-2"></i>Lecturer Profile</h4>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <!-- Profile form -->
+        <div class="etu-card mb-4">
+            <div class="etu-card-hdr"><span><i class="bi bi-person-fill me-2"></i>Personal &amp; Professional Details</span></div>
+            <div class="etu-card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="profile">
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="settings-avatar">
+                            {% if request.user.profile_picture %}
+                            <img src="{{ request.user.profile_picture.url }}" class="settings-avatar-img" alt="Profile photo">
+                            {% else %}
+                            <i class="bi bi-person-fill settings-avatar-icon"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label for="id_profile_picture" class="form-label fw-semibold mb-1">Profile Photo</label>
+                            <input type="file" id="id_profile_picture" name="profile_picture" class="form-control form-control-sm" accept="image/*" title="Upload profile photo">
+                            <div class="form-text">JPG or PNG, max 2 MB.</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="id_first_name" class="form-label fw-semibold">First Name</label>
+                            <input type="text" id="id_first_name" name="first_name" class="form-control" value="{{ request.user.first_name }}" placeholder="First name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_last_name" class="form-label fw-semibold">Last Name</label>
+                            <input type="text" id="id_last_name" name="last_name" class="form-control" value="{{ request.user.last_name }}" placeholder="Last name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_email" class="form-label fw-semibold">Email</label>
+                            <input type="email" id="id_email" name="email" class="form-control" value="{{ request.user.email }}" placeholder="Email address">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_phone" class="form-label fw-semibold">Phone</label>
+                            <input type="text" id="id_phone" name="phone" class="form-control" value="{{ request.user.phone }}" placeholder="+232 xx xxxxxx">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_specialization" class="form-label fw-semibold">Specialization</label>
+                            <input type="text" id="id_specialization" name="specialization" class="form-control" value="{{ lecturer_profile.specialization }}" placeholder="e.g. Applied Mathematics">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_position" class="form-label fw-semibold">Position / Title</label>
+                            <input type="text" id="id_position" name="position" class="form-control" value="{{ lecturer_profile.position }}" placeholder="e.g. Senior Lecturer">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_office_number" class="form-label fw-semibold">Office Number</label>
+                            <input type="text" id="id_office_number" name="office_number" class="form-control" value="{{ lecturer_profile.office_number }}" placeholder="e.g. Room 204">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="id_office_location" class="form-label fw-semibold">Office Location</label>
+                            <input type="text" id="id_office_location" name="office_location" class="form-control" value="{{ lecturer_profile.office_location }}" placeholder="e.g. Main Block">
+                        </div>
+                        <div class="col-12">
+                            <label for="id_bio" class="form-label fw-semibold">Bio <span class="text-muted fw-normal">(optional)</span></label>
+                            <textarea id="id_bio" name="bio" class="form-control" rows="4" placeholder="Brief professional biography...">{{ lecturer_profile.bio }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn auth-submit"><i class="bi bi-check-circle me-1"></i>Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-lock-fill me-2"></i>Change Password</span></div>
+            <div class="etu-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="password">
+                    <div class="mb-3">
+                        <label for="id_old_password" class="form-label fw-semibold">Current Password</label>
+                        <input type="password" id="id_old_password" name="old_password" class="form-control" placeholder="Current password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_new_password" class="form-label fw-semibold">New Password</label>
+                        <input type="password" id="id_new_password" name="new_password" class="form-control" placeholder="New password (min 8 chars)" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="id_new_password2" class="form-label fw-semibold">Confirm New Password</label>
+                        <input type="password" id="id_new_password2" name="new_password2" class="form-control" placeholder="Repeat new password" required>
+                    </div>
+                    <button type="submit" class="btn auth-submit"><i class="bi bi-shield-lock me-1"></i>Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account info -->
+    <div class="col-lg-5">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-info-circle me-2"></i>Account Information</span></div>
+            <div class="etu-card-body">
+                <div class="contact-row">
+                    <i class="bi bi-person-badge-fill ic-navy"></i>
+                    <div>
+                        <div class="contact-row-lbl">Username</div>
+                        <div class="contact-row-val">{{ request.user.username }}</div>
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <i class="bi bi-briefcase-fill ic-purple"></i>
+                    <div>
+                        <div class="contact-row-lbl">Staff ID</div>
+                        <div class="contact-row-val">{{ lecturer_profile.staff_id }}</div>
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <i class="bi bi-shield-fill ic-gold"></i>
+                    <div>
+                        <div class="contact-row-lbl">Role</div>
+                        <div class="contact-row-val">{{ request.user.get_role_display }}</div>
+                    </div>
+                </div>
+                <div class="contact-row mb-0">
+                    <i class="bi bi-easel-fill ic-blue"></i>
+                    <div>
+                        <div class="contact-row-lbl">Courses Teaching</div>
+                        <div class="contact-row-val">{{ courses.count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="etu-card mt-3">
+            <div class="etu-card-hdr"><span><i class="bi bi-activity me-2"></i>Quick Links</span></div>
+            <div class="etu-card-body d-flex flex-column gap-2">
+                <a href="{% url 'lecturer_grades' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-bar-chart-line me-1"></i>Grade Center</a>
+                <a href="{% url 'lecturer_materials' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-folder2-open me-1"></i>Course Materials</a>
+                <a href="{% url 'lecturer_office_hours' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history me-1"></i>Office Hours</a>
+                <a href="{% url 'lecturer_messages' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-envelope me-1"></i>Messages</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

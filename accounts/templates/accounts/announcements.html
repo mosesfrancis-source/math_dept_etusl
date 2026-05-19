@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Announcements — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-megaphone-fill me-2 ic-amber"></i>Announcements</h4>
+    {% if request.user.role in 'admin,hod,lecturer' or request.user.is_superuser %}
+    <a href="{% url 'announcement_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>New Announcement
+    </a>
+    {% endif %}
+</div>
+
+{% if announcements %}
+    {% for ann in announcements %}
+    <div class="etu-card mb-3">
+        <div class="etu-card-hdr d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-pin-angle-fill me-2"></i>{{ ann.title }}</span>
+            <span class="badge bg-secondary ms-2">
+                {% if ann.target == 'all' %}Everyone{% elif ann.target == 'student' %}Students{% else %}Staff{% endif %}
+            </span>
+        </div>
+        <div class="etu-card-body">
+            <p class="info-card-text mb-2">{{ ann.body|linebreaks }}</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <small class="text-muted">
+                    <i class="bi bi-person-fill me-1"></i>{{ ann.created_by.get_full_name|default:ann.created_by.username }}
+                    &nbsp;·&nbsp;<i class="bi bi-clock me-1"></i>{{ ann.created_at|date:"d M Y, H:i" }}
+                </small>
+                {% if request.user.role in 'admin,hod' or ann.created_by == request.user or request.user.is_superuser %}
+                <form method="post" action="{% url 'announcement_delete' ann.pk %}" onsubmit="return confirm('Delete this announcement?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-megaphone display-4 d-block mb-3"></i>
+        <p class="lead">No announcements at this time.</p>
+        <p class="small">Check back later or contact your department admin.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

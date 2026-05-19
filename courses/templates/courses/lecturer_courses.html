@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0"><i class="bi bi-easel-fill me-2 text-primary"></i>Courses I Teach</h3>
+</div>
+
+{% if courses %}
+<div class="row g-3">
+    {% for course in courses %}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-primary fs-6 px-3">{{ course.code }}</span>
+                    <span class="badge bg-{% if course.is_full %}danger{% else %}success{% endif %}">
+                        {{ course.enrolled_count }}/{{ course.max_students }} enrolled
+                    </span>
+                </div>
+                <h5 class="card-title mb-1">{{ course.name }}</h5>
+                <p class="text-muted small mb-3">
+                    <i class="bi bi-award me-1"></i>{{ course.credits }} credits
+                    &nbsp;&bull;&nbsp;
+                    <i class="bi bi-calendar2-week me-1"></i>{{ course.get_semester_display }}
+                    &nbsp;&bull;&nbsp;
+                    <i class="bi bi-mortarboard me-1"></i>Year {{ course.year_of_study }}
+                    &nbsp;&bull;&nbsp;
+                    {{ course.academic_year }}
+                </p>
+                <a href="{% url 'course_students' course.id %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-people me-1"></i>View Students &amp; Grades
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-journal-x display-4 d-block mb-3"></i>
+    <p class="lead">No active courses assigned to you.</p>
+    <p class="small">Contact the HOD to get courses assigned.</p>
+</div>
+{% endif %}
+
+{% endblock %}

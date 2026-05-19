@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}Settings — ETU Portal{% endblock %}
+{% block content %}
+
+<h4 class="mb-4">
+  <i class="bi bi-gear-wide-connected me-2"></i>Account Settings
+</h4>
+
+<div class="row g-4">
+  <!-- Profile -->
+  <div class="col-lg-7">
+    <div class="etu-card mb-4">
+      <div class="etu-card-hdr">
+        <span><i class="bi bi-person-circle me-2"></i>Profile Information</span>
+      </div>
+      <div class="etu-card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="profile" />
+
+          <!-- Avatar -->
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="settings-avatar">
+              {% if request.user.profile_picture %}
+              <img
+                src="{{ request.user.profile_picture.url }}"
+                class="settings-avatar-img"
+                alt="Profile photo"
+              />
+              {% else %}
+              <i class="bi bi-person-fill settings-avatar-icon"></i>
+              {% endif %}
+            </div>
+            <div>
+              <label class="form-label fw-semibold mb-1">Profile Photo</label>
+              <input
+                type="file"
+                name="profile_picture"
+                class="form-control form-control-sm"
+                accept="image/*"
+              />
+              <div class="form-text">JPG, PNG. Max 2MB.</div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">First Name</label>
+              <input
+                type="text"
+                name="first_name"
+                class="form-control"
+                value="{{ request.user.first_name }}"
+              />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Last Name</label>
+              <input
+                type="text"
+                name="last_name"
+                class="form-control"
+                value="{{ request.user.last_name }}"
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Email Address</label>
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                value="{{ request.user.email }}"
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Phone Number</label>
+              <input
+                type="text"
+                name="phone"
+                class="form-control"
+                value="{{ request.user.phone }}"
+                placeholder="+232 xx xxxxxx"
+              />
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <button type="submit" class="btn auth-submit">
+              <i class="bi bi-check-circle me-1"></i>Save Profile
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="etu-card">
+      <div class="etu-card-hdr">
+        <span><i class="bi bi-lock-fill me-2"></i>Change Password</span>
+      </div>
+      <div class="etu-card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="password" />
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Current Password</label>
+            <input
+              type="password"
+              name="old_password"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">New Password</label>
+            <input
+              type="password"
+              name="new_password"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Confirm New Password</label>
+            <input
+              type="password"
+              name="new_password2"
+              class="form-control"
+              required
+            />
+          </div>
+          <button type="submit" class="btn auth-submit">
+            <i class="bi bi-shield-lock me-1"></i>Change Password
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account info panel -->
+  <div class="col-lg-5">
+    <div class="etu-card">
+      <div class="etu-card-hdr">
+        <span><i class="bi bi-info-circle me-2"></i>Account Information</span>
+      </div>
+      <div class="etu-card-body">
+        <div class="contact-row">
+          <i class="bi bi-person-badge-fill ic-navy"></i>
+          <div>
+            <div class="contact-row-lbl">Username</div>
+            <div class="contact-row-val">{{ request.user.username }}</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <i class="bi bi-shield-fill ic-gold"></i>
+          <div>
+            <div class="contact-row-lbl">Role</div>
+            <div class="contact-row-val">
+              {{ request.user.get_role_display }}
+            </div>
+          </div>
+        </div>
+        {% if request.user.role == 'student' and request.user.student_profile %}
+        <div class="contact-row">
+          <i class="bi bi-mortarboard-fill ic-blue"></i>
+          <div>
+            <div class="contact-row-lbl">Student ID</div>
+            <div class="contact-row-val">
+              {{ request.user.student_profile.student_id }}
+            </div>
+          </div>
+        </div>
+        <div class="contact-row mb-0">
+          <i class="bi bi-calendar3 ic-green"></i>
+          <div>
+            <div class="contact-row-lbl">Year of Study</div>
+            <div class="contact-row-val">
+              Year {{ request.user.student_profile.year_of_study }}
+            </div>
+          </div>
+        </div>
+        {% elif request.user.role in 'lecturer,hod' and request.user.lecturer_profile %}
+        <div class="contact-row mb-0">
+          <i class="bi bi-briefcase-fill ic-purple"></i>
+          <div>
+            <div class="contact-row-lbl">Staff ID</div>
+            <div class="contact-row-val">
+              {{ request.user.lecturer_profile.staff_id }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="etu-card mt-3">
+      <div class="etu-card-hdr">
+        <span><i class="bi bi-activity me-2"></i>Quick Actions</span>
+      </div>
+      <div class="etu-card-body d-flex flex-column gap-2">
+        <a href="{% url 'inbox' %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-envelope me-1"></i>Go to Messages
+        </a>
+        <a href="{% url 'fees' %}" class="btn btn-outline-warning btn-sm">
+          <i class="bi bi-credit-card me-1"></i>Fee Payments
+        </a>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+          <i class="bi bi-box-arrow-right me-1"></i>Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

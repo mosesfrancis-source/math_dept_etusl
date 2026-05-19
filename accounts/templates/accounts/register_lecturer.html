@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Lecturer Registration — ETU Mathematics Portal{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center auth-wrap">
+  <div class="col-md-7 col-lg-6">
+    <div class="etu-card">
+      <div class="etu-card-hdr">
+        <span><i class="bi bi-person-workspace me-2"></i>Lecturer / HOD Registration</span>
+        <a href="{% url 'register' %}" class="btn btn-sm btn-outline-secondary">Student? Register here</a>
+      </div>
+      <div class="etu-card-body">
+        <div class="ann-bar mb-3">
+          <i class="bi bi-info-circle-fill text-warning"></i>
+          <span>You need a <strong>Registration PIN</strong> issued by the admin. Check your email.</span>
+        </div>
+        <form method="POST" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.first_name.id_for_label }}">First Name</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.last_name.id_for_label }}">Last Name</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.username.id_for_label }}">Username</label>
+              {{ form.username }}
+              {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.email.id_for_label }}">Email</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.staff_id.id_for_label }}">Staff ID</label>
+              {{ form.staff_id }}
+              {% if form.staff_id.errors %}<div class="text-danger small mt-1">{{ form.staff_id.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.specialization.id_for_label }}">Specialization</label>
+              {{ form.specialization }}
+              {% if form.specialization.errors %}<div class="text-danger small mt-1">{{ form.specialization.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold" for="{{ form.registration_pin.id_for_label }}">
+                <i class="bi bi-key-fill me-1"></i>Registration PIN
+              </label>
+              {{ form.registration_pin }}
+              {% if form.registration_pin.errors %}<div class="text-danger small mt-1">{{ form.registration_pin.errors.0 }}</div>{% endif %}
+              <div class="form-text">Your role (Lecturer or HOD) is determined by the PIN type.</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.password1.id_for_label }}">Password</label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+          <button type="submit" class="btn auth-submit mt-4">
+            <i class="bi bi-person-check-fill me-1"></i>Create Lecturer Account
+          </button>
+        </form>
+        <hr class="my-3">
+        <p class="text-center auth-links mb-0">Already have an account? <a href="{% url 'login' %}" class="auth-link">Login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

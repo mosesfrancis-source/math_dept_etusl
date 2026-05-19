@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Lecturer Dashboard — ETU Portal{% endblock %}
+{% block content %}
+
+<!-- Hero banner -->
+<div class="hero-sec mb-4">
+    <div class="row g-3 align-items-center">
+        <div class="col-lg-7">
+            <div class="hero-eyebrow">Lecturer Portal</div>
+            <h2 class="hero-title mb-2">Welcome back, {{ request.user.get_full_name }}</h2>
+            <p class="hero-desc mb-3">Manage grades, materials, assignments, attendance, and student engagement from one academic workspace.</p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'lecturer_profile' %}" class="btn btn-sm btn-light"><i class="bi bi-person-circle me-1"></i>Update Profile</a>
+                <a href="{% url 'lecturer_grades' %}" class="btn btn-sm btn-warning"><i class="bi bi-bar-chart-line me-1"></i>Grade Center</a>
+                <a href="{% url 'lecturer_messages' %}" class="btn btn-sm btn-outline-light"><i class="bi bi-envelope me-1"></i>Messages{% if unread_messages %} ({{ unread_messages }}){% endif %}</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="etu-card text-center py-3">
+                        <div class="stat-val">{{ analytics.courses }}</div>
+                        <div class="stat-lbl">Active Courses</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="etu-card text-center py-3">
+                        <div class="stat-val">{{ analytics.students }}</div>
+                        <div class="stat-lbl">Students</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="etu-card text-center py-3">
+                        <div class="stat-val">{{ pending_grades }}</div>
+                        <div class="stat-lbl">Pending Grades</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="etu-card text-center py-3">
+                        <div class="stat-val">{{ appointments_pending }}</div>
+                        <div class="stat-lbl">Appointment Requests</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Course breakdown -->
+    <div class="col-lg-8">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-easel me-2"></i>My Courses</span></div>
+            {% if course_breakdown %}
+            <div class="table-responsive">
+                <table class="table etu-tbl mb-0">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th class="text-center">Students</th>
+                            <th class="text-center">Assignments</th>
+                            <th class="text-center">Materials</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in course_breakdown %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ item.course.code }}</div>
+                                <small class="text-muted">{{ item.course.name }}</small>
+                            </td>
+                            <td class="text-center">{{ item.students }}</td>
+                            <td class="text-center">{{ item.assignments }}</td>
+                            <td class="text-center">{{ item.materials }}</td>
+                            <td>
+                                <a href="{% url 'course_students' item.course.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="etu-card-body text-center text-muted py-4">
+                <i class="bi bi-easel display-5 d-block mb-2"></i>
+                <p>No active courses assigned yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-lg-4">
+        <!-- Office hours -->
+        <div class="etu-card mb-3">
+            <div class="etu-card-hdr"><span><i class="bi bi-clock-history me-2"></i>Office Hours</span></div>
+            <div class="etu-card-body">
+                {% if office_hours %}
+                {% for oh in office_hours %}
+                <div class="d-flex gap-2 mb-2">
+                    <span class="badge bg-primary">{{ oh.get_day_of_week_display }}</span>
+                    <span class="small">{{ oh.start_time|time:"H:i" }} – {{ oh.end_time|time:"H:i" }}</span>
+                    {% if oh.location %}<span class="small text-muted">@ {{ oh.location }}</span>{% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted small mb-0">No office hours set. <a href="{% url 'lecturer_office_hours' %}">Add some</a></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent assignments -->
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-journal-text me-2"></i>Recent Assignments</span></div>
+            <div class="etu-card-body">
+                {% if recent_assignments %}
+                {% for a in recent_assignments %}
+                <div class="mb-2 pb-2 border-bottom">
+                    <div class="fw-semibold item-title">{{ a.title }}</div>
+                    <small class="text-muted">{{ a.course.code }} · Due {{ a.due_date|date:"d M" }}</small>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted small mb-0">No assignments created yet.</p>
+                {% endif %}
+                <a href="{% url 'lecturer_assignments' %}" class="btn btn-sm btn-outline-primary mt-2 w-100">View All</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

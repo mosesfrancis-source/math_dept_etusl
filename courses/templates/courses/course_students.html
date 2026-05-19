@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'lecturer_courses' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0">
+                <span class="badge bg-primary me-2">{{ course.code }}</span>{{ course.name }}
+            </h4>
+            <small class="text-muted">{{ course.get_semester_display }} &bull; {{ course.academic_year }}</small>
+        </div>
+    </div>
+    <span class="badge bg-info text-dark fs-6">{{ registrations|length }} student{{ registrations|length|pluralize }}</span>
+</div>
+
+{% if registrations %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm rounded overflow-hidden">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td class="text-muted small">{{ forloop.counter }}</td>
+                <td>
+                    {% if reg.student.student_profile %}
+                        <code>{{ reg.student.student_profile.student_id }}</code>
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </td>
+                <td class="fw-semibold">{{ reg.student.get_full_name }}</td>
+                <td>{% if reg.grade.score %}{{ reg.grade.score }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                <td>
+                    {% if reg.grade.letter_grade %}
+                    <span class="badge bg-{% if reg.grade.letter_grade == 'A' %}success{% elif reg.grade.letter_grade == 'F' %}danger{% elif reg.grade.letter_grade == 'D' %}warning text-dark{% else %}info text-dark{% endif %}">
+                        {{ reg.grade.letter_grade }}
+                    </span>
+                    {% else %}
+                    <span class="text-muted small fst-italic">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'grade_student' reg.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i>{% if reg.grade.score %}Edit Grade{% else %}Add Grade{% endif %}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-people display-4 d-block mb-3"></i>
+    <p class="lead">No students enrolled in this course yet.</p>
+</div>
+{% endif %}
+
+{% endblock %}

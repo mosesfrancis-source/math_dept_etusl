@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}{{ msg.subject }} — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <a href="{% url 'inbox' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+    <h5 class="mb-0">{{ msg.subject }}</h5>
+    <form method="post" action="{% url 'message_delete' msg.pk %}" class="ms-auto" onsubmit="return confirm('Delete this message?')">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></button>
+    </form>
+</div>
+
+<!-- Original message -->
+<div class="etu-card mb-3">
+    <div class="etu-card-hdr d-flex justify-content-between">
+        <span>
+            <i class="bi bi-person-fill me-1"></i>
+            <strong>{{ msg.sender.get_full_name|default:msg.sender.username }}</strong>
+            → {{ msg.recipient.get_full_name|default:msg.recipient.username }}
+        </span>
+        <small class="text-muted">{{ msg.sent_at|date:"d M Y, H:i" }}</small>
+    </div>
+    <div class="etu-card-body">
+        <p class="info-card-text mb-0">{{ msg.body|linebreaks }}</p>
+    </div>
+</div>
+
+<!-- Replies -->
+{% for reply in replies %}
+<div class="etu-card mb-2 ms-4">
+    <div class="etu-card-hdr d-flex justify-content-between">
+        <span><i class="bi bi-reply-fill me-1"></i><strong>{{ reply.sender.get_full_name|default:reply.sender.username }}</strong></span>
+        <small class="text-muted">{{ reply.sent_at|date:"d M Y, H:i" }}</small>
+    </div>
+    <div class="etu-card-body">
+        <p class="info-card-text mb-0">{{ reply.body|linebreaks }}</p>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Reply form -->
+<div class="etu-card mt-3">
+    <div class="etu-card-hdr"><span><i class="bi bi-reply-fill me-2"></i>Reply</span></div>
+    <div class="etu-card-body">
+        <form method="post">
+            {% csrf_token %}
+            <textarea name="body" class="form-control mb-3" rows="4" placeholder="Write your reply..." required></textarea>
+            <button type="submit" class="btn auth-submit"><i class="bi bi-send-fill me-1"></i>Send Reply</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Contact — ETU Mathematics Department{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+    <div class="page-hero-eyebrow">Get in Touch</div>
+    <h1 class="page-hero-title">Contact Us</h1>
+    <p class="page-hero-sub">Reach out to the Department of Mathematics or the ETUSL central administration.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="contact-box mb-4">
+            <h6 class="mb-3" style="color:var(--gold);font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:.75rem;">Department of Mathematics</h6>
+
+            <div class="contact-row">
+                <i class="bi bi-geo-alt-fill"></i>
+                <div>
+                    <div class="contact-row-lbl">Address</div>
+                    <div class="contact-row-val">Combema Road, Kenema<br>Sierra Leone (P.O. Box ETUSL 25)</div>
+                </div>
+            </div>
+            <div class="contact-row">
+                <i class="bi bi-telephone-fill"></i>
+                <div>
+                    <div class="contact-row-lbl">Phone</div>
+                    <div class="contact-row-val">+232 78 231363<br>+232 76 339387</div>
+                </div>
+            </div>
+            <div class="contact-row">
+                <i class="bi bi-envelope-fill"></i>
+                <div>
+                    <div class="contact-row-lbl">Registrar Email</div>
+                    <div class="contact-row-val"><a href="mailto:registrar@etusl.edu.sl">registrar@etusl.edu.sl</a></div>
+                </div>
+            </div>
+            <div class="contact-row">
+                <i class="bi bi-envelope-fill"></i>
+                <div>
+                    <div class="contact-row-lbl">Support Email</div>
+                    <div class="contact-row-val"><a href="mailto:rmagbity@etusl.edu.sl">rmagbity@etusl.edu.sl</a></div>
+                </div>
+            </div>
+            <div class="contact-row">
+                <i class="bi bi-globe"></i>
+                <div>
+                    <div class="contact-row-lbl">Website</div>
+                    <div class="contact-row-val"><a href="https://etusl.edu.sl/" target="_blank" rel="noopener">etusl.edu.sl</a></div>
+                </div>
+            </div>
+            <div class="contact-row">
+                <i class="bi bi-laptop"></i>
+                <div>
+                    <div class="contact-row-lbl">Student/Staff Portal</div>
+                    <div class="contact-row-val"><a href="https://webportal.etusl.edu.sl/" target="_blank" rel="noopener">webportal.etusl.edu.sl</a></div>
+                </div>
+            </div>
+            <div class="contact-row mb-0">
+                <i class="bi bi-person-plus-fill"></i>
+                <div>
+                    <div class="contact-row-lbl">Admissions Portal</div>
+                    <div class="contact-row-val"><a href="https://app.etusl.edu.sl/" target="_blank" rel="noopener">app.etusl.edu.sl</a></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-share me-2"></i>Social Media</span></div>
+            <div class="etu-card-body d-flex gap-3">
+                <a href="#" class="btn btn-outline-primary" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="btn btn-outline-dark" aria-label="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+                <a href="#" class="btn btn-outline-danger" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                <a href="#" class="btn btn-outline-primary" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="etu-card mb-4">
+            <div class="etu-card-hdr"><span><i class="bi bi-envelope-paper me-2"></i>Send a Message</span></div>
+            <div class="etu-card-body">
+                <div class="ann-bar mb-3">
+                    <i class="bi bi-info-circle-fill ic-amber"></i>
+                    <span class="info-card-text">This form will open your email client. You can also email us directly.</span>
+                </div>
+                <form action="mailto:registrar@etusl.edu.sl" method="GET">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="Your full name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control" placeholder="your@email.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Subject</label>
+                            <input type="text" name="subject" class="form-control" placeholder="e.g. Registration PIN Request">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Message</label>
+                            <textarea name="body" class="form-control" rows="5" placeholder="Write your message here..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn auth-submit">
+                                <i class="bi bi-send-fill me-1"></i>Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="info-card text-center">
+                    <i class="bi bi-key-fill info-card-icon ic-amber"></i>
+                    <div class="info-card-title">Registration PIN</div>
+                    <div class="info-card-text">Email the registrar to request your student or lecturer PIN.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card text-center">
+                    <i class="bi bi-briefcase-fill info-card-icon ic-blue"></i>
+                    <div class="info-card-title">Jobs &amp; Vacancies</div>
+                    <div class="info-card-text">Visit <a href="https://etusljbs.connectsierraleone.com/" target="_blank" rel="noopener" class="auth-link">ETUSL Jobs Portal</a> for current vacancies.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card text-center">
+                    <i class="bi bi-mortarboard-fill info-card-icon ic-green"></i>
+                    <div class="info-card-title">Admissions</div>
+                    <div class="info-card-text">Apply online at <a href="https://app.etusl.edu.sl/" target="_blank" rel="noopener" class="auth-link">app.etusl.edu.sl</a> for the 2025/26 intake.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

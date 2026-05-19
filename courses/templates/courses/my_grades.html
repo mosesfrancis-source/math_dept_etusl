@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0"><i class="bi bi-bar-chart-fill me-2 text-info"></i>My Grades &amp; Transcript</h3>
+</div>
+
+<!-- GPA Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card text-center border-0 shadow-sm bg-primary text-white">
+            <div class="card-body py-3">
+                <div class="display-5 fw-bold">{{ gpa }}</div>
+                <div class="small opacity-75">Cumulative GPA</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card text-center border-0 shadow-sm bg-success text-white">
+            <div class="card-body py-3">
+                <div class="display-5 fw-bold">{{ registrations|length }}</div>
+                <div class="small opacity-75">Courses Taken</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if registrations %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm rounded overflow-hidden">
+        <thead class="table-dark">
+            <tr>
+                <th>Code</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Grade Points</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td><span class="badge bg-primary">{{ reg.course.code }}</span></td>
+                <td class="fw-semibold">{{ reg.course.name }}</td>
+                <td>{{ reg.course.credits }}</td>
+                {% if reg.grade.letter_grade %}
+                <td>{{ reg.grade.score }}</td>
+                <td>
+                    <span class="badge fs-6 bg-{% if reg.grade.letter_grade == 'A' %}success{% elif reg.grade.letter_grade == 'F' %}danger{% elif reg.grade.letter_grade == 'D' %}warning text-dark{% else %}info text-dark{% endif %}">
+                        {{ reg.grade.letter_grade }}
+                    </span>
+                </td>
+                <td>{{ reg.grade.grade_point }}</td>
+                <td class="text-muted small">{{ reg.grade.remarks|default:"—" }}</td>
+                {% else %}
+                <td colspan="4" class="text-muted fst-italic">Not yet graded</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card border-0 bg-light mt-3 p-3">
+    <strong class="small mb-1 d-block">Grade Scale</strong>
+    <div class="small text-muted">
+        <span class="badge bg-success me-1">A</span> 90–100 &nbsp;(4.0) &nbsp;&bull;
+        <span class="badge bg-info text-dark me-1">B+</span> 80–89 &nbsp;(3.5) &nbsp;&bull;
+        <span class="badge bg-info text-dark me-1">B</span> 70–79 &nbsp;(3.0) &nbsp;&bull;
+        <span class="badge bg-info text-dark me-1">C+</span> 60–69 &nbsp;(2.5) &nbsp;&bull;
+        <span class="badge bg-info text-dark me-1">C</span> 50–59 &nbsp;(2.0) &nbsp;&bull;
+        <span class="badge bg-warning text-dark me-1">D</span> 40–49 &nbsp;(1.0) &nbsp;&bull;
+        <span class="badge bg-danger me-1">F</span> 0–39 &nbsp;(0.0)
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-clipboard-x display-4 d-block mb-3"></i>
+    <p class="lead">No grade records yet.</p>
+    <p class="small">Register for courses and complete them to see grades here.</p>
+</div>
+{% endif %}
+
+{% endblock %}

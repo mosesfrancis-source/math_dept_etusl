@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}News — ETU Mathematics Department{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+    <div class="page-hero-eyebrow">Latest Updates</div>
+    <h1 class="page-hero-title">News &amp; Announcements</h1>
+    <p class="page-hero-sub">Stay informed with the latest news from the Department of Mathematics and Eastern Technical University of Sierra Leone.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-newspaper me-2"></i>Recent News</span></div>
+            <div class="etu-card-body">
+
+                <div class="news-item">
+                    <div class="news-date">2025 — Admissions</div>
+                    <div class="news-title">Phase One Interview Sessions Underway — 2025/2026</div>
+                    <div class="news-body">ETUSL is currently conducting Phase One interview sessions for students who applied for the 2025/2026 academic year. Pending applicants are encouraged to check their application status via the admissions portal at <a href="https://app.etusl.edu.sl/" target="_blank" rel="noopener">app.etusl.edu.sl</a>.</div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">2025 — New Programs</div>
+                    <div class="news-title">Post-Graduate Master's Programs Launched</div>
+                    <div class="news-body">ETUSL has successfully introduced new Post-Graduate Master's programs in Education, Nursing, and Public Health through the School of Post-Graduate Studies. Applications are open for the 2025/2026 academic year.</div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">2025 — Campus Development</div>
+                    <div class="news-title">Bunumbu Campus Expansion in Progress</div>
+                    <div class="news-body">Construction work is well underway at the Bunumbu Campus in Kailahun District. The expansion includes new hostel facilities, lecture halls, and staff quarters — significantly increasing the university's capacity to accommodate more students.</div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">2025 — New Program</div>
+                    <div class="news-title">BSc Medical Laboratory Science Program Launched</div>
+                    <div class="news-body">ETUSL has successfully launched the Bachelor of Science in Medical Laboratory Science program under the Faculty of Health &amp; Disaster Management. This new program aims to address the country's healthcare workforce needs.</div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">2025 — Portal</div>
+                    <div class="news-title">Mathematics Department Student Portal Now Live</div>
+                    <div class="news-body">The Department of Mathematics has launched its online student portal, enabling students to register for courses, view grades, track GPA, and access department resources from anywhere. Contact the registrar for your Registration PIN.</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="etu-card mb-3">
+            <div class="etu-card-hdr"><span><i class="bi bi-megaphone me-2"></i>Quick Announcements</span></div>
+            <div class="etu-card-body">
+                <div class="ann-bar mb-2">
+                    <i class="bi bi-info-circle-fill ic-amber"></i>
+                    <span class="info-card-text">Portal registration is open. Contact admin for your PIN.</span>
+                </div>
+                <div class="ann-bar mb-2">
+                    <i class="bi bi-info-circle-fill ic-amber"></i>
+                    <span class="info-card-text">2025/2026 academic year admissions ongoing.</span>
+                </div>
+                <div class="ann-bar">
+                    <i class="bi bi-info-circle-fill ic-amber"></i>
+                    <span class="info-card-text">Bunumbu Campus expansion in progress.</span>
+                </div>
+            </div>
+        </div>
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-link-45deg me-2"></i>Quick Links</span></div>
+            <div class="etu-card-body">
+                <div class="d-flex flex-column gap-2">
+                    <a href="https://etusl.edu.sl/" target="_blank" rel="noopener" class="prog-badge"><i class="bi bi-globe"></i>ETUSL Website</a>
+                    <a href="https://app.etusl.edu.sl/" target="_blank" rel="noopener" class="prog-badge"><i class="bi bi-person-badge"></i>Admissions Portal</a>
+                    <a href="{% url 'register' %}" class="prog-badge"><i class="bi bi-person-plus"></i>Student Registration</a>
+                    <a href="{% url 'contact' %}" class="prog-badge"><i class="bi bi-envelope"></i>Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

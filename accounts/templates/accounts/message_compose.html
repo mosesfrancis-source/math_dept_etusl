@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Compose Message — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-pencil-square me-2"></i>Compose Message</span></div>
+            <div class="etu-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">To</label>
+                        <select name="recipient" class="form-select" required>
+                            <option value="">— Select recipient —</option>
+                            {% for u in recipients %}
+                            <option value="{{ u.pk }}" {% if to_user and to_user.pk == u.pk %}selected{% endif %}>
+                                {{ u.get_full_name|default:u.username }} ({{ u.get_role_display }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject</label>
+                        <input type="text" name="subject" class="form-control" placeholder="Message subject" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Message</label>
+                        <textarea name="body" class="form-control" rows="7" placeholder="Write your message here..." required></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn auth-submit"><i class="bi bi-send-fill me-1"></i>Send</button>
+                        <a href="{% url 'inbox' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

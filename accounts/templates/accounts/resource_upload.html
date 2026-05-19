@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Upload Resource — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-cloud-upload me-2"></i>Upload Resource</span></div>
+            <div class="etu-card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Calculus I Past Paper 2023" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select name="category" class="form-select">
+                            {% for val, label in categories %}
+                            <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Description <span class="text-muted fw-normal">(optional)</span></label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brief description of this resource..."></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">File</label>
+                        <input type="file" name="file" class="form-control" required>
+                        <div class="form-text">PDF, Word, Excel, PowerPoint, ZIP supported.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn auth-submit"><i class="bi bi-cloud-upload me-1"></i>Upload</button>
+                        <a href="{% url 'resources' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

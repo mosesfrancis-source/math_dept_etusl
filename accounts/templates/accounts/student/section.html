@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+{% block title %}
+{% if section == 'announcements' %}Announcements
+{% elif section == 'messages' %}Messages
+{% elif section == 'assignments' %}Assignments
+{% elif section == 'materials' %}Materials
+{% elif section == 'discussions' %}Discussions
+{% elif section == 'grades' %}My Grades
+{% elif section == 'appointments' %}Appointments
+{% elif section == 'timetable' %}Timetable
+{% else %}Student Portal
+{% endif %} — ETU Portal
+{% endblock %}
+{% block content %}
+
+<!-- ══ ANNOUNCEMENTS ══════════════════════════════════════════════ -->
+{% if section == 'announcements' %}
+<h4 class="mb-3"><i class="bi bi-megaphone-fill me-2 ic-amber"></i>Announcements</h4>
+
+{% if announcements %}
+{% for ann in announcements %}
+<div class="etu-card mb-3">
+    <div class="etu-card-hdr d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-pin-angle-fill me-2"></i>{{ ann.title }}</span>
+        <span class="badge bg-secondary">{% if ann.target == 'all' %}Everyone{% elif ann.target == 'student' %}Students{% else %}Staff{% endif %}</span>
+    </div>
+    <div class="etu-card-body">
+        <p class="info-card-text mb-2">{{ ann.body|linebreaks }}</p>
+        <small class="text-muted">
+            <i class="bi bi-person-fill me-1"></i>{{ ann.created_by.get_full_name|default:ann.created_by.username }}
+            &nbsp;·&nbsp;<i class="bi bi-clock me-1"></i>{{ ann.created_at|date:"d M Y, H:i" }}
+        </small>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-megaphone display-4 d-block mb-3"></i>
+    <p class="lead">No announcements at this time.</p>
+</div>
+{% endif %}
+
+<!-- ══ MESSAGES ══════════════════════════════════════════════════ -->
+{% elif section == 'messages' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-envelope-fill me-2 ic-blue"></i>Messages</h4>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-pencil-square me-2"></i>New Message</span></div>
+            <div class="etu-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="msg_to" class="form-label fw-semibold">To</label>
+                        <select id="msg_to" name="recipient" class="form-select" required>
+                            <option value="">— Select lecturer —</option>
+                            {% for lec in lecturers %}
+                            <option value="{{ lec.pk }}">{{ lec.get_full_name|default:lec.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="msg_subject" class="form-label fw-semibold">Subject</label>
+                        <input type="text" id="msg_subject" name="subject" class="form-control" placeholder="Subject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="msg_body" class="form-label fw-semibold">Message</label>
+                        <textarea id="msg_body" name="body" class="form-control" rows="5" placeholder="Write your message..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn auth-submit"><i class="bi bi-send-fill me-1"></i>Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#inbox_tab"><i class="bi bi-inbox me-1"></i>Inbox {% if unread_messages %}<span class="badge bg-danger">{{ unread_messages }}</span>{% endif %}</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#sent_tab"><i class="bi bi-send me-1"></i>Sent</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="inbox_tab">
+                {% if inbox %}
+                <div class="etu-card">
+                    <div class="list-group list-group-flush">
+                        {% for m in inbox %}
+                        <a href="{% url 'message_thread' m.pk %}" class="list-group-item list-group-item-action {% if not m.is_read %}msg-unread{% endif %}">
+                            <div class="msg-from">{{ m.sender.get_full_name|default:m.sender.username }}</div>
+                            <div class="msg-subject">{{ m.subject }}</div>
+                            <small class="text-muted">{{ m.sent_at|date:"d M H:i" }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Inbox is empty.</p>
+                {% endif %}
+            </div>
+            <div class="tab-pane fade" id="sent_tab">
+                {% if sent %}
+                <div class="etu-card">
+                    <div class="list-group list-group-flush">
+                        {% for m in sent %}
+                        <a href="{% url 'message_thread' m.pk %}" class="list-group-item list-group-item-action">
+                            <div class="msg-from">To: {{ m.recipient.get_full_name|default:m.recipient.username }}</div>
+                            <div class="msg-subject">{{ m.subject }}</div>
+                            <small class="text-muted">{{ m.sent_at|date:"d M H:i" }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">No sent messages.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ASSIGNMENTS ════════════════════════════════════════════════ -->
+{% elif section == 'assignments' %}
+<h4 class="mb-3"><i class="bi bi-journal-check me-2 ic-purple"></i>Assignments</h4>
+
+{% if assignments %}
+{% for a in assignments %}
+{% with sub=submissions|dictsort:"assignment_id"|last %}
+<div class="etu-card mb-3">
+    <div class="etu-card-hdr d-flex justify-content-between align-items-center">
+        <span>{{ a.title }}</span>
+        <span class="badge bg-secondary">{{ a.course.code }}</span>
+    </div>
+    <div class="etu-card-body">
+        <p class="info-card-text mb-2">{{ a.description|truncatewords:30 }}</p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>Due {{ a.due_date|date:"d M Y, H:i" }}</small>
+            <small class="text-muted">{{ a.total_marks }} marks</small>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="assignment_id" value="{{ a.pk }}">
+            <div class="row g-2 align-items-end">
+                <div class="col-sm-6">
+                    <label for="sub_file_{{ a.pk }}" class="form-label fw-semibold small">Upload File</label>
+                    <input type="file" id="sub_file_{{ a.pk }}" name="uploaded_file" class="form-control form-control-sm" title="Upload assignment file">
+                </div>
+                <div class="col-sm-4">
+                    <label for="sub_text_{{ a.pk }}" class="form-label fw-semibold small">Or Text Response</label>
+                    <textarea id="sub_text_{{ a.pk }}" name="text_submission" class="form-control form-control-sm" rows="2" placeholder="Optional text..."></textarea>
+                </div>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endwith %}
+{% endfor %}
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-journal-check display-4 d-block mb-3"></i>
+    <p class="lead">No assignments due at this time.</p>
+</div>
+{% endif %}
+
+<!-- ══ MATERIALS ══════════════════════════════════════════════════ -->
+{% elif section == 'materials' %}
+<h4 class="mb-3"><i class="bi bi-folder2-open me-2 ic-blue"></i>Course Materials</h4>
+
+{% if materials %}
+<div class="row g-3 mb-4">
+    {% for m in materials %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ m.title }}</span>
+                <span class="badge bg-secondary">{{ m.course.code }}</span>
+            </div>
+            <div class="etu-card-body">
+                <p class="info-card-text mb-2">{{ m.description|truncatewords:15|default:"" }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ m.get_material_type_display }}</small>
+                    {% if m.file %}<a href="{{ m.file.url }}" class="btn btn-sm btn-outline-primary" title="Download {{ m.title }}" aria-label="Download {{ m.title }}"><i class="bi bi-download"></i></a>{% endif %}
+                    {% if m.external_url %}<a href="{{ m.external_url }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open external link">View</a>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-4 text-muted">
+    <i class="bi bi-folder2 display-4 d-block mb-3"></i>
+    <p class="lead">No course materials available yet.</p>
+</div>
+{% endif %}
+
+{% if tutorials %}
+<h5 class="mb-3 mt-2"><i class="bi bi-journal-bookmark me-2 ic-teal"></i>Tutorials</h5>
+<div class="row g-3">
+    {% for t in tutorials %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ t.title }}</span>
+                <span class="badge bg-secondary">{{ t.course.code }}</span>
+            </div>
+            <div class="etu-card-body">
+                <p class="info-card-text mb-2">{{ t.summary|truncatewords:15|default:"" }}</p>
+                {% if t.file %}<a href="{{ t.file.url }}" class="btn btn-sm btn-outline-primary" title="Download tutorial" aria-label="Download {{ t.title }}"><i class="bi bi-download me-1"></i>Download</a>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ══ DISCUSSIONS ════════════════════════════════════════════════ -->
+{% elif section == 'discussions' %}
+<h4 class="mb-3"><i class="bi bi-chat-dots me-2 ic-teal"></i>Discussions</h4>
+
+{% if discussions %}
+{% for d in discussions %}
+<div class="etu-card mb-3">
+    <div class="etu-card-hdr d-flex justify-content-between">
+        <span><i class="bi bi-chat-dots me-2"></i>{{ d.topic }}</span>
+        {% if d.course %}<span class="badge bg-secondary">{{ d.course.code }}</span>{% endif %}
+    </div>
+    <div class="etu-card-body">
+        <p class="info-card-text mb-3">{{ d.body|truncatewords:40 }}</p>
+        {% if d.replies.all %}
+        <div class="ms-3 mb-3">
+            {% for reply in d.replies.all %}
+            <div class="mb-2 pb-2 border-bottom">
+                <strong class="small">{{ reply.author.get_full_name|default:reply.author.username }}</strong>
+                <span class="text-muted small ms-1">{{ reply.created_at|date:"d M H:i" }}</span>
+                <div class="info-card-text">{{ reply.body }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="discussion_id" value="{{ d.pk }}">
+            <div class="d-flex gap-2">
+                <label for="reply_{{ d.pk }}" class="visually-hidden">Reply to discussion</label>
+                <input type="text" id="reply_{{ d.pk }}" name="reply_body" class="form-control form-control-sm reply-input" placeholder="Write a reply..." required>
+                <button type="submit" class="btn btn-sm btn-primary">Reply</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-chat display-4 d-block mb-3"></i>
+    <p class="lead">No discussion threads available.</p>
+</div>
+{% endif %}
+
+<!-- ══ GRADES ════════════════════════════════════════════════════ -->
+{% elif section == 'grades' %}
+<h4 class="mb-3"><i class="bi bi-bar-chart-fill me-2 ic-green"></i>My Grades</h4>
+
+{% if gpa is not None %}
+<div class="ann-bar mb-4">
+    <i class="bi bi-mortarboard-fill ic-gold"></i>
+    <span class="info-card-text">Cumulative GPA: <strong>{{ gpa|floatformat:2 }}</strong></span>
+</div>
+{% endif %}
+
+{% if registrations %}
+<div class="etu-card">
+    <div class="table-responsive">
+        <table class="table etu-tbl mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Course</th>
+                    <th scope="col">Credits</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Grade</th>
+                    <th scope="col">Semester</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ reg.course.code }}</div>
+                        <small class="text-muted">{{ reg.course.name }}</small>
+                    </td>
+                    <td>{{ reg.course.credits }}</td>
+                    <td>{% if reg.grade %}{{ reg.grade.score|default:"—" }}{% else %}<span class="text-muted">Pending</span>{% endif %}</td>
+                    <td>{% if reg.grade %}{{ reg.grade.letter_grade|default:"—" }}{% else %}—{% endif %}</td>
+                    <td>{{ reg.course.get_semester_display }} Y{{ reg.course.year_of_study }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-bar-chart display-4 d-block mb-3"></i>
+    <p class="lead">No grades recorded yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ APPOINTMENTS ═══════════════════════════════════════════════ -->
+{% elif section == 'appointments' %}
+<h4 class="mb-3"><i class="bi bi-calendar2-check me-2 ic-amber"></i>Appointments</h4>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-plus-circle me-2"></i>Request Appointment</span></div>
+            <div class="etu-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="appt_lecturer" class="form-label fw-semibold">Lecturer</label>
+                        <select id="appt_lecturer" name="lecturer_id" class="form-select" required>
+                            <option value="">— Select lecturer —</option>
+                            {% for lec in lecturers %}
+                            <option value="{{ lec.pk }}">{{ lec.get_full_name|default:lec.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="appt_datetime" class="form-label fw-semibold">Preferred Date &amp; Time</label>
+                        <input type="datetime-local" id="appt_datetime" name="preferred_datetime" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="appt_reason" class="form-label fw-semibold">Reason</label>
+                        <textarea id="appt_reason" name="reason" class="form-control" rows="4" placeholder="Briefly explain the purpose of the meeting..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn auth-submit"><i class="bi bi-calendar-plus me-1"></i>Send Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        {% if appointments %}
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-list-check me-2"></i>My Requests</span></div>
+            <div class="list-group list-group-flush">
+                {% for appt in appointments %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-semibold">{{ appt.lecturer.get_full_name }}</div>
+                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ appt.preferred_datetime|date:"d M Y, H:i" }}</small>
+                            <div class="info-card-text mt-1">{{ appt.reason|truncatewords:20 }}</div>
+                        </div>
+                        <div>
+                            {% if appt.status == 'approved' %}<span class="badge bg-success">Approved</span>
+                            {% elif appt.status == 'declined' %}<span class="badge bg-danger">Declined</span>
+                            {% elif appt.status == 'completed' %}<span class="badge bg-secondary">Completed</span>
+                            {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-calendar2 display-4 d-block mb-3"></i>
+            <p class="lead">No appointment requests yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ══ TIMETABLE ══════════════════════════════════════════════════ -->
+{% elif section == 'timetable' %}
+<h4 class="mb-3"><i class="bi bi-calendar3 me-2 ic-green"></i>My Timetable</h4>
+
+{% if timetable %}
+<div class="etu-card mb-4">
+    <div class="etu-card-hdr"><span><i class="bi bi-clock me-2"></i>Weekly Schedule</span></div>
+    <div class="table-responsive">
+        <table class="table etu-tbl mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Day</th>
+                    <th scope="col">Course</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Room</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Lecturer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in timetable %}
+                <tr>
+                    <td>{{ t.get_day_of_week_display }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ t.course.code }}</div>
+                        <small class="text-muted">{{ t.course.name }}</small>
+                    </td>
+                    <td>{{ t.start_time|time:"H:i" }} – {{ t.end_time|time:"H:i" }}</td>
+                    <td>{{ t.room|default:"—" }}</td>
+                    <td>{{ t.get_activity_type_display }}</td>
+                    <td>{{ t.lecturer.get_full_name|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-4 text-muted">
+    <i class="bi bi-calendar3 display-4 d-block mb-3"></i>
+    <p class="lead">No timetable published yet.</p>
+</div>
+{% endif %}
+
+{% if exams %}
+<h5 class="mb-3"><i class="bi bi-clipboard-data me-2 ic-red"></i>Upcoming Tests &amp; Exams</h5>
+<div class="row g-3">
+    {% for e in exams %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ e.title }}</span>
+                <span class="badge bg-danger">{{ e.get_exam_type_display }}</span>
+            </div>
+            <div class="etu-card-body">
+                <div class="d-flex gap-3 text-muted small">
+                    <span><i class="bi bi-calendar3 me-1"></i>{{ e.scheduled_for|date:"d M Y, H:i" }}</span>
+                    <span><i class="bi bi-clock me-1"></i>{{ e.duration_minutes }} min</span>
+                    {% if e.room %}<span><i class="bi bi-geo-alt me-1"></i>{{ e.room }}</span>{% endif %}
+                </div>
+                <small class="text-muted d-block mt-1">{{ e.course.code }} — {{ e.lecturer.get_full_name }}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

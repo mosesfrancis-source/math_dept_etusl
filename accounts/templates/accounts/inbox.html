@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}{% if tab == 'sent' %}Sent{% else %}Inbox{% endif %} — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">
+        <i class="bi bi-envelope{% if tab == 'sent' %}-check{% else %}-fill{% endif %} me-2 ic-blue"></i>
+        {% if tab == 'sent' %}Sent Messages{% else %}Inbox{% endif %}
+    </h4>
+    <a href="{% url 'message_compose' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-pencil-square me-1"></i>Compose
+    </a>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link {% if tab != 'sent' %}active{% endif %}" href="{% url 'inbox' %}">
+            <i class="bi bi-inbox me-1"></i>Inbox
+            {% if unread_messages %}<span class="badge bg-danger ms-1">{{ unread_messages }}</span>{% endif %}
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if tab == 'sent' %}active{% endif %}" href="{% url 'sent_box' %}">
+            <i class="bi bi-send me-1"></i>Sent
+        </a>
+    </li>
+</ul>
+
+{% if msgs %}
+<div class="etu-card">
+    <div class="list-group list-group-flush">
+        {% for m in msgs %}
+        <a href="{% url 'message_thread' m.pk %}" class="list-group-item list-group-item-action msg-row {% if not m.is_read and tab != 'sent' %}msg-unread{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="user-av user-av-sm">
+                            {% if tab == 'sent' %}
+                                {% if m.recipient.profile_picture %}
+                                <img src="{{ m.recipient.profile_picture.url }}" class="user-av-img">
+                                {% else %}<i class="bi bi-person-fill text-white"></i>{% endif %}
+                            {% else %}
+                                {% if m.sender.profile_picture %}
+                                <img src="{{ m.sender.profile_picture.url }}" class="user-av-img">
+                                {% else %}<i class="bi bi-person-fill text-white"></i>{% endif %}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="msg-from">
+                                {% if tab == 'sent' %}To: {{ m.recipient.get_full_name|default:m.recipient.username }}
+                                {% else %}{{ m.sender.get_full_name|default:m.sender.username }}{% endif %}
+                            </div>
+                            <div class="msg-subject">{{ m.subject }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end text-nowrap ms-3">
+                    <small class="text-muted">{{ m.sent_at|date:"d M H:i" }}</small>
+                    {% if not m.is_read and tab != 'sent' %}<span class="badge bg-primary ms-1">New</span>{% endif %}
+                    {% if m.replies.count %}<small class="d-block text-muted"><i class="bi bi-reply-fill"></i> {{ m.replies.count }}</small>{% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-envelope display-4 d-block mb-3"></i>
+    <p class="lead">{% if tab == 'sent' %}No sent messages.{% else %}Your inbox is empty.{% endif %}</p>
+    <a href="{% url 'message_compose' %}" class="btn btn-outline-primary btn-sm mt-2">
+        <i class="bi bi-pencil-square me-1"></i>Compose a message
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

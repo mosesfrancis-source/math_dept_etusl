@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home — ETU Mathematics Department Portal{% endblock %}
+{% block content %}
+
+<!-- ══ Hero ══════════════════════════════════════════════════════ -->
+<div class="hero-sec home-hero mb-4">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-4">
+            <div class="hero-eyebrow">Welcome to the</div>
+            <h1 class="hero-title home-hero-title">Department of<br>Mathematics</h1>
+            <div class="hero-sub mb-2">Eastern Technical University of Sierra Leone (ETUSL)</div>
+            <div class="hero-location mb-2">Combema Road, Kenema, Sierra Leone</div>
+            <p class="hero-desc home-hero-desc">
+                Empowering the next generation of African innovators and leaders through
+                cutting-edge mathematics education and research. Part of ETUSL's Faculty
+                of Pure &amp; Applied Sciences.
+            </p>
+            <div class="d-flex gap-2 mt-4 flex-wrap">
+                <a href="{% url 'register' %}" class="btn home-btn-primary">
+                    <i class="bi bi-person-plus me-1"></i>Student Registration
+                </a>
+                <a href="{% url 'login' %}" class="btn home-btn-ghost">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                </a>
+                <a href="https://etusl.edu.sl/" target="_blank" rel="noopener" class="btn home-btn-muted">
+                    About ETUSL
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Department Slideshow ── -->
+        <div class="col-lg-5 d-none d-lg-block">
+            <div id="deptCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="3500">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="5" aria-label="Slide 6"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="6" aria-label="Slide 7"></button>
+                    <button type="button" data-bs-target="#deptCarousel" data-bs-slide-to="7" aria-label="Slide 8"></button>
+                </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="{% static 'images/IMG-0243.jpg' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/IMG_5413.jpg' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/IMG_6135.JPG' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/IMG_20210510_122812_674.jpg' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/IMG_20210510_123007_312.jpg' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/images.jpeg' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/images (1).jpeg' %}" alt="Department">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{% static 'images/images (2).jpeg' %}" alt="Department">
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#deptCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#deptCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Glance Stats ── -->
+        <div class="col-lg-3">
+            <div class="person-card h-100">
+                <div class="person-role mb-2">Department at a Glance</div>
+                <div class="row g-2 mt-1 text-center">
+                    <div class="col-6 glance-col">
+                        <i class="bi bi-collection glance-icon ic-teal"></i>
+                        <div class="glance-val">{{ total_courses }}</div>
+                        <div class="glance-lbl">Courses</div>
+                    </div>
+                    <div class="col-6 glance-col">
+                        <i class="bi bi-people glance-icon ic-gold"></i>
+                        <div class="glance-val">{{ total_staff }}</div>
+                        <div class="glance-lbl">Staffs</div>
+                    </div>
+                    <div class="col-6 glance-col">
+                        <i class="bi bi-mortarboard glance-icon ic-emerald"></i>
+                        <div class="glance-val">{{ total_students }}</div>
+                        <div class="glance-lbl">Students</div>
+                    </div>
+                    <div class="col-6 glance-col">
+                        <i class="bi bi-diagram-3 glance-icon ic-red"></i>
+                        <div class="glance-val">9</div>
+                        <div class="glance-lbl">Faculties</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Staff Cards ════════════════════════════════════════════════ -->
+<div class="row g-3 staff-section">
+    <div class="col-sm-6 col-md-3">
+        <div class="staff-card">
+            <img src="{% static 'images/Hod.JPG' %}" alt="HOD Mohamed Alpha" class="staff-card-avatar">
+            <div class="staff-card-role">Head of Department</div>
+            <div class="staff-card-name">Mohamed Alpha</div>
+            <div class="staff-card-dept">Mathematics Department</div>
+            <a href="mailto:mohamedalpha@etusl.edu.sl" class="btn btn-sm mt-2">Contact</a>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="staff-card">
+            <img src="{% static 'images/mr.saffasheku.jpg' %}" alt="Lecturer Saffa Sheku" class="staff-card-avatar">
+            <div class="staff-card-role">Senior Lecturer</div>
+            <div class="staff-card-name">Saffa Sheku</div>
+            <div class="staff-card-dept">Mathematics Department</div>
+            <a href="mailto:saffasheku@etusl.edu.sl" class="btn btn-sm mt-2">Contact</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="staff-card staff-card-pin d-flex align-items-center gap-3">
+            <i class="bi bi-envelope-open-fill ic-navy staff-card-pin-icon"></i>
+            <div>
+                <div class="staff-card-role">Need your Registration PIN?</div>
+                <div class="staff-card-name-sm">Contact the Mathematics Department Tech Support</div>
+                <div class="staff-card-dept">PINs are required for all student and lecturer registrations</div>
+                <a href="mailto:mathdepttech@etusl.edu.sl" class="btn btn-sm mt-2 staff-card-pin-btn">
+                    <i class="bi bi-envelope me-1"></i>mathdepttech@etusl.edu.sl
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ University Stats ══════════════════════════════════════════ -->
+<div class="etu-card mb-4">
+    <div class="etu-card-hdr">
+        <span><i class="bi bi-building me-2"></i>Eastern Technical University of Sierra Leone — At a Glance</span>
+        <a href="https://etusl.edu.sl/" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">Visit ETUSL</a>
+    </div>
+    <div class="etu-card-body">
+        <div class="row g-3 text-center">
+            <div class="col-6 col-md-3">
+                <i class="bi bi-mortarboard-fill univ-stat-icon ic-blue"></i>
+                <div class="univ-stat-val">5,000+</div>
+                <div class="univ-stat-lbl">Enrolled Students</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <i class="bi bi-people-fill univ-stat-icon ic-green"></i>
+                <div class="univ-stat-val">200+</div>
+                <div class="univ-stat-lbl">Faculty Members</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <i class="bi bi-journal-richtext univ-stat-icon ic-purple"></i>
+                <div class="univ-stat-val">50+</div>
+                <div class="univ-stat-lbl">Technical Programs</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <i class="bi bi-briefcase-fill univ-stat-icon ic-amber"></i>
+                <div class="univ-stat-val">85%</div>
+                <div class="univ-stat-lbl">Graduate Employment</div>
+            </div>
+        </div>
+        <hr class="my-3">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="bi bi-geo-alt-fill mt-1 ic-navy"></i>
+                    <div>
+                        <div class="fw-semibold contact-label">Campus Location</div>
+                        <div class="contact-text">Combema Road, Kenema, Sierra Leone (P.O. Box ETUSL 25)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="bi bi-telephone-fill mt-1 ic-navy"></i>
+                    <div>
+                        <div class="fw-semibold contact-label">Phone</div>
+                        <div class="contact-text">+232 78 231363<br>+232 76 339387</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-start gap-2">
+                    <i class="bi bi-envelope-fill mt-1 ic-navy"></i>
+                    <div>
+                        <div class="fw-semibold contact-label">Email</div>
+                        <a href="mailto:registrar@etusl.edu.sl" class="contact-link">registrar@etusl.edu.sl</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Feature Cards ═════════════════════════════════════════════ -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="etu-card text-center feat-card">
+            <i class="bi bi-person-badge-fill feat-card-icon ic-blue"></i>
+            <div class="feat-card-title">Student Registration</div>
+            <div class="feat-card-desc">Register with your admin-issued PIN and manage your academic profile</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="etu-card text-center feat-card">
+            <i class="bi bi-bar-chart-fill feat-card-icon ic-green"></i>
+            <div class="feat-card-title">View Courses &amp; GPA</div>
+            <div class="feat-card-desc">Browse courses, register, and track your cumulative GPA in real time</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="etu-card text-center feat-card">
+            <i class="bi bi-shield-lock-fill feat-card-icon ic-purple"></i>
+            <div class="feat-card-title">Admin Management</div>
+            <div class="feat-card-desc">HOD and admin tools for managing courses, lecturers, and students</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="etu-card text-center feat-card">
+            <i class="bi bi-megaphone-fill feat-card-icon ic-amber"></i>
+            <div class="feat-card-title">Announcements &amp; News</div>
+            <div class="feat-card-desc">Stay updated with the latest department news and announcements</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ CTA ═══════════════════════════════════════════════════════ -->
+<div class="etu-card text-center cta-card">
+    <h4 class="cta-title">Ready to get started?</h4>
+    <p class="cta-desc">
+        Create your account using your admin-issued PIN, or log in to access your
+        courses, grades, and department resources.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="{% url 'register' %}" class="btn btn-primary cta-btn">
+            <i class="bi bi-person-plus me-1"></i>Student Registration
+        </a>
+        <a href="{% url 'register_lecturer' %}" class="btn btn-outline-secondary cta-btn">
+            <i class="bi bi-person-workspace me-1"></i>Lecturer Registration
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-outline-primary cta-btn">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+        </a>
+    </div>
+</div>
+
+{% endblock %}

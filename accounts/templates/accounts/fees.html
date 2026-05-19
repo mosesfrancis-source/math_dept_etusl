@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Fee Payments — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-credit-card-fill me-2 ic-amber"></i>Fee Payments</h4>
+    {% if not is_staff %}
+    <a href="{% url 'fee_submit' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>Submit Payment
+    </a>
+    {% endif %}
+</div>
+
+{% if is_staff and pending_count %}
+<div class="ann-bar mb-3">
+    <i class="bi bi-exclamation-triangle-fill ic-amber"></i>
+    <span class="info-card-text"><strong>{{ pending_count }}</strong> payment{{ pending_count|pluralize }} awaiting review.</span>
+</div>
+{% endif %}
+
+<!-- Orange Money info (students only) -->
+{% if not is_staff %}
+<div class="etu-card mb-4">
+    <div class="etu-card-hdr"><span><i class="bi bi-phone-fill me-2"></i>How to Pay via Orange Money</span></div>
+    <div class="etu-card-body">
+        <div class="row g-3">
+            <div class="col-md-3 col-6 text-center">
+                <div class="om-step"><span class="om-step-num">1</span></div>
+                <div class="info-card-text mt-1">Dial <strong>*144#</strong> on your phone</div>
+            </div>
+            <div class="col-md-3 col-6 text-center">
+                <div class="om-step"><span class="om-step-num">2</span></div>
+                <div class="info-card-text mt-1">Select <strong>Transfer Money</strong> → Enter recipient number</div>
+            </div>
+            <div class="col-md-3 col-6 text-center">
+                <div class="om-step"><span class="om-step-num">3</span></div>
+                <div class="info-card-text mt-1">Enter amount &amp; confirm with your PIN</div>
+            </div>
+            <div class="col-md-3 col-6 text-center">
+                <div class="om-step"><span class="om-step-num">4</span></div>
+                <div class="info-card-text mt-1">Take a <strong>screenshot</strong> of the confirmation &amp; submit below</div>
+            </div>
+        </div>
+        <div class="ann-bar mt-3">
+            <i class="bi bi-info-circle-fill ic-amber"></i>
+            <span class="info-card-text">Contact the department office for the Orange Money payment number and fee schedule.</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Payments list -->
+{% if payments %}
+<div class="etu-card">
+    <div class="etu-card-hdr"><span><i class="bi bi-list-check me-2"></i>Payment History</span></div>
+    <div class="table-responsive">
+        <table class="table etu-tbl mb-0">
+            <thead>
+                <tr>
+                    {% if is_staff %}<th>Student</th>{% endif %}
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Transaction ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Receipt</th>
+                    {% if is_staff %}<th>Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    {% if is_staff %}<td>{{ p.student.get_full_name|default:p.student.username }}</td>{% endif %}
+                    <td>{{ p.description }}</td>
+                    <td>Le {{ p.amount|floatformat:2 }}</td>
+                    <td>{{ p.transaction_id|default:"—" }}</td>
+                    <td>{{ p.submitted_at|date:"d M Y" }}</td>
+                    <td>
+                        {% if p.status == 'verified' %}
+                            <span class="badge bg-success">Verified</span>
+                        {% elif p.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% if p.notes %}<small class="d-block text-muted">{{ p.notes }}</small>{% endif %}
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ p.receipt.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-image"></i>
+                        </a>
+                    </td>
+                    {% if is_staff %}
+                    <td>
+                        {% if p.status == 'pending' %}
+                        <form method="post" action="{% url 'fee_review' p.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="verify">
+                            <button type="submit" class="btn btn-sm btn-success" title="Verify">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-sm btn-danger ms-1" title="Reject"
+                            data-bs-toggle="modal" data-bs-target="#rejectModal{{ p.pk }}">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+
+                        <!-- Reject modal -->
+                        <div class="modal fade" id="rejectModal{{ p.pk }}" tabindex="-1">
+                            <div class="modal-dialog modal-sm">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h6 class="modal-title">Reject Payment</h6>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="post" action="{% url 'fee_review' p.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reject">
+                                        <div class="modal-body">
+                                            <label class="form-label fw-semibold">Reason (optional)</label>
+                                            <textarea name="notes" class="form-control" rows="3" placeholder="Reason for rejection..."></textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <small class="text-muted">{{ p.verified_by.get_full_name|default:"—" }}</small>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-credit-card display-4 d-block mb-3"></i>
+    <p class="lead">No payment records yet.</p>
+    {% if not is_staff %}
+    <a href="{% url 'fee_submit' %}" class="btn btn-primary btn-sm mt-1">
+        <i class="bi bi-plus-circle me-1"></i>Submit a Payment
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

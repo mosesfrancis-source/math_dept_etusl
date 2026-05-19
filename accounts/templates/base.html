@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ETU Mathematics Portal{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/portal.css' %}" rel="stylesheet">
+</head>
+<body>
+
+<!-- ══ Top Info Bar ══════════════════════════════════════════════ -->
+<div class="top-info-bar">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-logo" id="brand-logo-wrap">
+                    <img src="{% static 'images/newlogo.PNG' %}" alt="ETU-SL Logo" class="brand-logo-img"
+                         onerror="document.getElementById('brand-logo-wrap').classList.add('no-img')">
+                    <span class="brand-logo-icon"><i class="bi bi-shield-fill brand-icon"></i></span>
+                </div>
+                <div>
+                    <div class="brand-title">MATHEMATICS DEPARTMENT</div>
+                    <div class="brand-sub">EASTERN TECHNICAL UNIVERSITY OF SIERRA LEONE (ETUSL)</div>
+                    <div class="brand-tag">Empowering the Next Generation of African Innovators &amp; Leaders</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Main Navigation ══════════════════════════════════════════ -->
+<nav class="main-nav">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center nav-inner">
+            <div class="d-flex align-items-center gap-2 me-4">
+                <div class="nav-mark"><i class="bi bi-mortarboard-fill nav-mark-icon"></i></div>
+                <span class="nav-etu">ETU</span>
+                <span class="nav-dept">Mathematics Department</span>
+            </div>
+
+            <ul class="navbar-nav flex-row me-auto d-none d-lg-flex">
+                <li class="nav-item"><a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+                <li class="nav-item"><a href="{% url 'about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+                <li class="nav-item"><a href="{% url 'programs' %}" class="nav-link {% if request.resolver_match.url_name == 'programs' %}active{% endif %}">Programs</a></li>
+                <li class="nav-item"><a href="{% url 'faculty' %}" class="nav-link {% if request.resolver_match.url_name == 'faculty' %}active{% endif %}">Faculty</a></li>
+                <li class="nav-item"><a href="{% url 'students' %}" class="nav-link {% if request.resolver_match.url_name == 'students' %}active{% endif %}">Students</a></li>
+                <li class="nav-item"><a href="{% url 'news' %}" class="nav-link {% if request.resolver_match.url_name == 'news' %}active{% endif %}">News</a></li>
+                <li class="nav-item"><a href="{% url 'contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'student' %}
+                    <a href="{% url 'dashboard' %}" class="btn-portal"><i class="bi bi-person-badge me-1"></i>Student Portal</a>
+                    {% elif request.user.role == 'lecturer' or request.user.role == 'hod' %}
+                    <a href="{% url 'lecturer_dashboard' %}" class="btn-portal"><i class="bi bi-person-workspace me-1"></i>Lecturer Portal</a>
+                    {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn-portal"><i class="bi bi-shield-lock me-1"></i>Admin Portal</a>
+                    {% endif %}
+                    <i class="bi bi-bell-fill nav-bell d-none d-md-inline" aria-label="Notifications"></i>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="user-av">
+                            {% if request.user.profile_picture %}
+                            <img src="{{ request.user.profile_picture.url }}" class="user-av-img" alt="">
+                            {% else %}
+                            <i class="bi bi-person-fill text-white user-av-icon"></i>
+                            {% endif %}
+                        </div>
+                        <div class="user-info d-none d-lg-block">
+                            <div class="user-greet">Welcome back,</div>
+                            <div class="user-name">{{ request.user.get_full_name }}</div>
+                        </div>
+                        <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light btn-logout-sm ms-1" aria-label="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="nav-link">Login</a>
+                <a href="{% url 'register' %}" class="btn-portal">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ══ Flash Messages ════════════════════════════════════════════ -->
+{% if messages %}
+<div class="container-fluid px-3 pt-2">
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show flash-msg mb-2" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ══ Page Body ══════════════════════════════════════════════════ -->
+<div class="page-body">
+
+    {% if request.user.is_authenticated %}
+    <aside class="sidebar">
+        <div class="sidebar-hdr">
+            {% if request.user.role == 'student' %}
+            <i class="bi bi-person-badge"></i>Student Portal
+            {% elif request.user.role == 'lecturer' or request.user.role == 'hod' %}
+            <i class="bi bi-person-workspace"></i>Lecturer Portal
+            {% else %}
+            <i class="bi bi-shield-lock"></i>Admin Portal
+            {% endif %}
+        </div>
+        <nav class="s-nav" aria-label="Portal navigation">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i>Dashboard
+                    </a>
+                </li>
+
+                {% if request.user.role == 'student' %}
+                <!-- ── Student nav ── -->
+                <li class="nav-item">
+                    <a href="{% url 'my_courses' %}" class="nav-link {% if request.resolver_match.url_name == 'my_courses' %}active{% endif %}">
+                        <i class="bi bi-collection"></i>My Courses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'available_courses' %}" class="nav-link {% if request.resolver_match.url_name == 'available_courses' %}active{% endif %}">
+                        <i class="bi bi-clipboard-check"></i>My Registration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'my_grades' %}" class="nav-link {% if request.resolver_match.url_name == 'my_grades' %}active{% endif %}">
+                        <i class="bi bi-bar-chart-fill"></i>My GPA
+                    </a>
+                </li>
+                <li class="s-divider" aria-hidden="true"></li>
+                <li class="nav-item">
+                    <a href="{% url 'student_announcements' %}" class="nav-link {% if request.resolver_match.url_name == 'student_announcements' %}active{% endif %}">
+                        <i class="bi bi-megaphone"></i>Announcements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_materials' %}" class="nav-link {% if request.resolver_match.url_name == 'student_materials' %}active{% endif %}">
+                        <i class="bi bi-folder2-open"></i>Materials
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_messages' %}" class="nav-link {% if request.resolver_match.url_name == 'student_messages' %}active{% endif %}">
+                        <i class="bi bi-envelope"></i>Messages
+                        {% if unread_messages %}<span class="badge bg-danger ms-auto nav-badge">{{ unread_messages }}</span>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_assignments' %}" class="nav-link {% if request.resolver_match.url_name == 'student_assignments' %}active{% endif %}">
+                        <i class="bi bi-journal-check"></i>Assignments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_grades' %}" class="nav-link {% if request.resolver_match.url_name == 'student_grades' %}active{% endif %}">
+                        <i class="bi bi-bar-chart-fill"></i>Grades
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_discussions' %}" class="nav-link {% if request.resolver_match.url_name == 'student_discussions' %}active{% endif %}">
+                        <i class="bi bi-chat-dots"></i>Discussions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_appointments' %}" class="nav-link {% if request.resolver_match.url_name == 'student_appointments' %}active{% endif %}">
+                        <i class="bi bi-calendar2-check"></i>Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'student_timetable' %}" class="nav-link {% if request.resolver_match.url_name == 'student_timetable' %}active{% endif %}">
+                        <i class="bi bi-calendar3"></i>Timetable
+                    </a>
+                </li>
+                <li class="s-divider" aria-hidden="true"></li>
+                <li class="nav-item">
+                    <a href="{% url 'resources' %}" class="nav-link {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
+                        <i class="bi bi-folder2-open"></i>Resources
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'fees' %}" class="nav-link {% if request.resolver_match.url_name == 'fees' %}active{% endif %}">
+                        <i class="bi bi-credit-card"></i>Fee Payments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                        <i class="bi bi-gear-wide-connected"></i>Settings
+                    </a>
+                </li>
+
+                {% elif request.user.role == 'lecturer' or request.user.role == 'hod' %}
+                <!-- ── Lecturer / HOD nav ── -->
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i>Lecturer Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_courses' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_courses' %}active{% endif %}">
+                        <i class="bi bi-easel"></i>My Courses
+                    </a>
+                </li>
+                {% if request.user.role == 'hod' %}
+                <li class="nav-item">
+                    <a href="{% url 'manage_courses' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_courses' %}active{% endif %}">
+                        <i class="bi bi-gear"></i>Manage Courses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'add_course' %}" class="nav-link {% if request.resolver_match.url_name == 'add_course' %}active{% endif %}">
+                        <i class="bi bi-plus-circle"></i>Add Course
+                    </a>
+                </li>
+                {% endif %}
+                <li class="s-divider" aria-hidden="true"></li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_grades' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_grades' %}active{% endif %}">
+                        <i class="bi bi-bar-chart-line"></i>Grade Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_assignments' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_assignments' %}active{% endif %}">
+                        <i class="bi bi-journal-text"></i>Assignments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_materials' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_materials' %}active{% endif %}">
+                        <i class="bi bi-folder2-open"></i>Materials
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_tutorials' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_tutorials' %}active{% endif %}">
+                        <i class="bi bi-journal-bookmark"></i>Tutorials
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_announcements' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_announcements' %}active{% endif %}">
+                        <i class="bi bi-megaphone"></i>Announcements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_messages' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_messages' %}active{% endif %}">
+                        <i class="bi bi-envelope"></i>Messages
+                        {% if unread_messages %}<span class="badge bg-danger ms-auto nav-badge">{{ unread_messages }}</span>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_discussions' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_discussions' %}active{% endif %}">
+                        <i class="bi bi-chat-dots"></i>Discussions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_attendance' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_attendance' %}active{% endif %}">
+                        <i class="bi bi-person-check"></i>Attendance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_exams' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_exams' %}active{% endif %}">
+                        <i class="bi bi-clipboard-data"></i>Tests / Exams
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_timetable' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_timetable' %}active{% endif %}">
+                        <i class="bi bi-calendar3"></i>Timetable
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_office_hours' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_office_hours' %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i>Office Hours
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'lecturer_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'lecturer_analytics' %}active{% endif %}">
+                        <i class="bi bi-graph-up-arrow"></i>Analytics
+                    </a>
+                </li>
+                <li class="s-divider" aria-hidden="true"></li>
+                <li class="nav-item">
+                    <a href="{% url 'resources' %}" class="nav-link {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
+                        <i class="bi bi-folder2-open"></i>Resources
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                        <i class="bi bi-gear-wide-connected"></i>Settings
+                    </a>
+                </li>
+
+                {% else %}
+                <!-- ── Admin nav ── -->
+                <li class="nav-item">
+                    <a href="{% url 'manage_courses' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_courses' %}active{% endif %}">
+                        <i class="bi bi-gear"></i>Manage Courses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'admin_pins' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_pins' %}active{% endif %}">
+                        <i class="bi bi-key-fill"></i>PIN Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'announcements' %}" class="nav-link {% if request.resolver_match.url_name == 'announcements' %}active{% endif %}">
+                        <i class="bi bi-megaphone"></i>Announcements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'resources' %}" class="nav-link {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
+                        <i class="bi bi-folder2-open"></i>Resources
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'inbox' %}" class="nav-link {% if request.resolver_match.url_name == 'inbox' %}active{% endif %}">
+                        <i class="bi bi-envelope"></i>Messages
+                        {% if unread_messages %}<span class="badge bg-danger ms-auto nav-badge">{{ unread_messages }}</span>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'fees' %}" class="nav-link {% if request.resolver_match.url_name == 'fees' %}active{% endif %}">
+                        <i class="bi bi-credit-card"></i>Fee Payments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/" class="nav-link"><i class="bi bi-shield-lock"></i>Admin Panel</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'settings' %}" class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                        <i class="bi bi-gear-wide-connected"></i>Settings
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="s-divider" aria-hidden="true"></li>
+                <li class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link s-logout">
+                        <i class="bi bi-box-arrow-left"></i>Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    {% endif %}
+
+    <main class="{% if request.user.is_authenticated %}main-content{% else %}main-content-full{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<!-- ══ Footer ════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+    <div class="container-fluid px-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>&copy; {% now "Y" %} Department of Mathematics, Eastern Technical University of Sierra Leone. All Rights Reserved.</div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span><i class="bi bi-telephone me-1"></i>+232 78 231363 / +232 76 339387</span>
+                <a href="mailto:registrar@etusl.edu.sl">registrar@etusl.edu.sl</a>
+                <span class="d-none d-md-inline"><i class="bi bi-geo-alt me-1"></i>Combema Road, Kenema, Sierra Leone</span>
+            </div>
+            <div class="footer-soc">
+                <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

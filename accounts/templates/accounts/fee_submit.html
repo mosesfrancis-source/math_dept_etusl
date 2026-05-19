@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Submit Fee Payment — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        <!-- Orange Money instructions -->
+        <div class="etu-card mb-4">
+            <div class="etu-card-hdr"><span><i class="bi bi-phone-fill me-2"></i>Pay via Orange Money First</span></div>
+            <div class="etu-card-body">
+                <div class="row g-3 text-center mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="om-step"><span class="om-step-num">1</span></div>
+                        <div class="info-card-text mt-2">Dial <strong>*144#</strong></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="om-step"><span class="om-step-num">2</span></div>
+                        <div class="info-card-text mt-2">Select <strong>Transfer</strong> &amp; enter dept. number</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="om-step"><span class="om-step-num">3</span></div>
+                        <div class="info-card-text mt-2">Enter amount &amp; confirm PIN</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="om-step"><span class="om-step-num">4</span></div>
+                        <div class="info-card-text mt-2"><strong>Screenshot</strong> the confirmation</div>
+                    </div>
+                </div>
+                <div class="ann-bar">
+                    <i class="bi bi-info-circle-fill ic-amber"></i>
+                    <span class="info-card-text">Contact the department office for the payment number and fee schedule before making a transfer.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit form -->
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-credit-card-fill me-2"></i>Submit Payment Receipt</span></div>
+            <div class="etu-card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Payment Description</label>
+                        <input type="text" name="description" class="form-control"
+                               placeholder="e.g. Tuition Fee — 2024/2025 Academic Year" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Amount Paid (Le)</label>
+                            <input type="number" name="amount" class="form-control"
+                                   placeholder="e.g. 500000" min="1" step="any" required>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">
+                                Transaction / Reference ID
+                                <span class="text-muted fw-normal">(optional)</span>
+                            </label>
+                            <input type="text" name="transaction_id" class="form-control"
+                                   placeholder="e.g. OM-2024-XXXX">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Receipt Photo / Screenshot <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="receipt" class="form-control" accept="image/*" required>
+                        <div class="form-text">Upload a clear screenshot of your Orange Money confirmation. JPG or PNG, max 5 MB.</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn auth-submit">
+                            <i class="bi bi-send-fill me-1"></i>Submit for Review
+                        </button>
+                        <a href="{% url 'fees' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

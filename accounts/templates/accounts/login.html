@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Login — ETU Mathematics Portal{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center auth-wrap">
+    <div class="col-md-5 col-lg-4">
+        <div class="etu-card">
+            <div class="etu-card-hdr">
+                <span><i class="bi bi-box-arrow-in-right me-2"></i>Portal Login</span>
+            </div>
+            <div class="etu-card-body">
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="id_username">Username</label>
+                        <input type="text" name="username" id="id_username" class="form-control" autofocus required placeholder="Enter your username">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" for="id_password">Password</label>
+                        <input type="password" name="password" id="id_password" class="form-control" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn auth-submit">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                    </button>
+                </form>
+                <hr class="my-3">
+                <div class="text-center auth-links">
+                    <p class="mb-1">Student? <a href="{% url 'register' %}" class="auth-link">Register here</a></p>
+                    <p class="mb-1">Lecturer / HOD? <a href="{% url 'register_lecturer' %}" class="auth-link">Register here</a></p>
+                    <p class="mb-0 mt-2"><a href="{% url 'password_reset' %}" class="auth-link">Forgot password?</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

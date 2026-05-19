@@ -1,0 +1,938 @@
+{% extends 'base.html' %}
+{% block title %}
+{% if section == 'announcements' %}Announcements
+{% elif section == 'messages' %}Messages
+{% elif section == 'grades' %}Grade Center
+{% elif section == 'assignments' %}Assignments
+{% elif section == 'tutorials' %}Tutorials
+{% elif section == 'materials' %}Materials
+{% elif section == 'office-hours' %}Office Hours
+{% elif section == 'timetable' %}Timetable
+{% elif section == 'exams' %}Tests &amp; Exams
+{% elif section == 'discussions' %}Discussions
+{% elif section == 'attendance' %}Attendance
+{% elif section == 'analytics' %}Analytics
+{% else %}Lecturer Portal
+{% endif %} — ETU Portal
+{% endblock %}
+{% block content %}
+
+<!-- ══ ANNOUNCEMENTS ══════════════════════════════════════════════ -->
+{% if section == 'announcements' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-megaphone-fill me-2 ic-amber"></i>Announcements</h4>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-plus-circle me-2"></i>New Announcement</span></div>
+            <div class="etu-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="ann_title" class="form-label fw-semibold">Title</label>
+                        <input type="text" id="ann_title" name="title" class="form-control" placeholder="Announcement title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ann_body" class="form-label fw-semibold">Message</label>
+                        <textarea id="ann_body" name="body" class="form-control" rows="5" placeholder="Write your announcement..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ann_target" class="form-label fw-semibold">Audience</label>
+                        <select id="ann_target" name="target" class="form-select">
+                            <option value="all">Everyone</option>
+                            <option value="student">Students Only</option>
+                            <option value="staff">Staff Only</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn auth-submit"><i class="bi bi-send-fill me-1"></i>Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        {% if announcements %}
+        {% for ann in announcements %}
+        <div class="etu-card mb-3">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span><i class="bi bi-pin-angle-fill me-2"></i>{{ ann.title }}</span>
+                <span class="badge bg-secondary">{% if ann.target == 'all' %}Everyone{% elif ann.target == 'student' %}Students{% else %}Staff{% endif %}</span>
+            </div>
+            <div class="etu-card-body">
+                <p class="info-card-text mb-2">{{ ann.body|linebreaks }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ ann.created_at|date:"d M Y, H:i" }}</small>
+                    {% if ann.created_by == request.user %}
+                    <form method="post" onsubmit="return confirm('Delete this announcement?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="announcement_id" value="{{ ann.pk }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete announcement" title="Delete"><i class="bi bi-trash3"></i></button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-megaphone display-4 d-block mb-3"></i>
+            <p class="lead">No announcements yet. Post one to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ══ MESSAGES ══════════════════════════════════════════════════ -->
+{% elif section == 'messages' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-envelope-fill me-2 ic-blue"></i>Messages</h4>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="etu-card">
+            <div class="etu-card-hdr"><span><i class="bi bi-pencil-square me-2"></i>New Message</span></div>
+            <div class="etu-card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send">
+                    <div class="mb-3">
+                        <label for="msg_recipient" class="form-label fw-semibold">To</label>
+                        <select id="msg_recipient" name="recipient" class="form-select" required>
+                            <option value="">— Select student —</option>
+                            {% for s in students %}
+                            <option value="{{ s.pk }}">{{ s.get_full_name|default:s.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="msg_subject" class="form-label fw-semibold">Subject</label>
+                        <input type="text" id="msg_subject" name="subject" class="form-control" placeholder="Subject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="msg_body" class="form-label fw-semibold">Message</label>
+                        <textarea id="msg_body" name="body" class="form-control" rows="5" placeholder="Write your message..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn auth-submit"><i class="bi bi-send-fill me-1"></i>Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <ul class="nav nav-tabs mb-3" id="msgTab">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#inbox_tab"><i class="bi bi-inbox me-1"></i>Inbox {% if unread_messages %}<span class="badge bg-danger">{{ unread_messages }}</span>{% endif %}</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#sent_tab"><i class="bi bi-send me-1"></i>Sent</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="inbox_tab">
+                {% if inbox %}
+                <div class="etu-card">
+                    <div class="list-group list-group-flush">
+                        {% for m in inbox %}
+                        <a href="{% url 'message_thread' m.pk %}" class="list-group-item list-group-item-action {% if not m.is_read %}msg-unread{% endif %}">
+                            <div class="msg-from">{{ m.sender.get_full_name|default:m.sender.username }}</div>
+                            <div class="msg-subject">{{ m.subject }}</div>
+                            <small class="text-muted">{{ m.sent_at|date:"d M H:i" }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Inbox is empty.</p>
+                {% endif %}
+            </div>
+            <div class="tab-pane fade" id="sent_tab">
+                {% if sent %}
+                <div class="etu-card">
+                    <div class="list-group list-group-flush">
+                        {% for m in sent %}
+                        <a href="{% url 'message_thread' m.pk %}" class="list-group-item list-group-item-action">
+                            <div class="msg-from">To: {{ m.recipient.get_full_name|default:m.recipient.username }}</div>
+                            <div class="msg-subject">{{ m.subject }}</div>
+                            <small class="text-muted">{{ m.sent_at|date:"d M H:i" }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">No sent messages.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ GRADES ════════════════════════════════════════════════════ -->
+{% elif section == 'grades' %}
+<h4 class="mb-3"><i class="bi bi-bar-chart-line me-2 ic-green"></i>Grade Center</h4>
+
+{% if registrations %}
+<div class="etu-card">
+    <div class="table-responsive">
+        <table class="table etu-tbl mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Student</th>
+                    <th scope="col">Course</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Grade</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                <tr>
+                    <td>{{ reg.student.get_full_name|default:reg.student.username }}</td>
+                    <td>{{ reg.course.code }}</td>
+                    <td>{% if reg.grade %}{{ reg.grade.score|default:"—" }}{% else %}—{% endif %}</td>
+                    <td>{% if reg.grade %}{{ reg.grade.letter_grade|default:"—" }}{% else %}—{% endif %}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#gradeModal{{ reg.pk }}" title="Grade this student">
+                            <i class="bi bi-pencil"></i> Grade
+                        </button>
+                        <!-- Grade modal -->
+                        <div class="modal fade" id="gradeModal{{ reg.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h6 class="modal-title">Grade: {{ reg.student.get_full_name }} — {{ reg.course.code }}</h6>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="save">
+                                        <input type="hidden" name="registration_id" value="{{ reg.pk }}">
+                                        <div class="modal-body">
+                                            {% if grade_form %}{{ grade_form.as_p }}{% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                                            <button type="submit" class="btn btn-primary btn-sm">Save Grade</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-bar-chart display-4 d-block mb-3"></i>
+    <p class="lead">No students enrolled in your courses yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ ASSIGNMENTS ════════════════════════════════════════════════ -->
+{% elif section == 'assignments' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-journal-text me-2 ic-purple"></i>Assignments</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newAssignmentModal">
+        <i class="bi bi-plus-circle me-1"></i>New Assignment
+    </button>
+</div>
+
+<!-- New Assignment Modal -->
+<div class="modal fade" id="newAssignmentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Create Assignment</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="as_course" class="form-label fw-semibold">Course</label>
+                            <select id="as_course" name="course_id" class="form-select" required>
+                                <option value="">— Select course —</option>
+                                {% for c in courses %}<option value="{{ c.pk }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="as_due" class="form-label fw-semibold">Due Date</label>
+                            <input type="datetime-local" id="as_due" name="due_date" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="as_title" class="form-label fw-semibold">Title</label>
+                            <input type="text" id="as_title" name="title" class="form-control" placeholder="Assignment title" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="as_desc" class="form-label fw-semibold">Description</label>
+                            <textarea id="as_desc" name="description" class="form-control" rows="4" placeholder="Assignment description..."></textarea>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="as_marks" class="form-label fw-semibold">Total Marks</label>
+                            <input type="number" id="as_marks" name="total_marks" class="form-control" value="100" min="1">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="as_file" class="form-label fw-semibold">Attachment <span class="text-muted fw-normal">(optional)</span></label>
+                            <input type="file" id="as_file" name="attachment" class="form-control" title="Optional attachment">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if assignments %}
+<div class="row g-3">
+    {% for a in assignments %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ a.title }}</span>
+                <span class="badge bg-secondary">{{ a.course.code }}</span>
+            </div>
+            <div class="etu-card-body">
+                <p class="info-card-text mb-2">{{ a.description|truncatewords:20 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>Due {{ a.due_date|date:"d M Y, H:i" }}</small>
+                    <span class="badge bg-primary">{{ a.submissions.count }} submissions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-journal-text display-4 d-block mb-3"></i>
+    <p class="lead">No assignments created yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ TUTORIALS ══════════════════════════════════════════════════ -->
+{% elif section == 'tutorials' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-journal-bookmark me-2 ic-teal"></i>Tutorials</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTutorialModal">
+        <i class="bi bi-plus-circle me-1"></i>New Tutorial
+    </button>
+</div>
+
+<div class="modal fade" id="newTutorialModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Post Tutorial</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body row g-3">
+                    <div class="col-12">
+                        <label for="tut_course" class="form-label fw-semibold">Course</label>
+                        <select id="tut_course" name="course_id" class="form-select" required>
+                            <option value="">— Select course —</option>
+                            {% for c in courses %}<option value="{{ c.pk }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="tut_title" class="form-label fw-semibold">Title</label>
+                        <input type="text" id="tut_title" name="title" class="form-control" placeholder="Tutorial title" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="tut_summary" class="form-label fw-semibold">Summary</label>
+                        <textarea id="tut_summary" name="summary" class="form-control" rows="3" placeholder="Brief summary..."></textarea>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="tut_file" class="form-label fw-semibold">File <span class="text-muted fw-normal">(optional)</span></label>
+                        <input type="file" id="tut_file" name="file" class="form-control" title="Tutorial file attachment">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Post Tutorial</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if tutorials %}
+<div class="row g-3">
+    {% for t in tutorials %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ t.title }}</span>
+                <span class="badge bg-secondary">{{ t.course.code }}</span>
+            </div>
+            <div class="etu-card-body">
+                <p class="info-card-text mb-2">{{ t.summary|truncatewords:20|default:"No summary provided." }}</p>
+                {% if t.file %}<a href="{{ t.file.url }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i>Download</a>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-journal-bookmark display-4 d-block mb-3"></i>
+    <p class="lead">No tutorials posted yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ MATERIALS ══════════════════════════════════════════════════ -->
+{% elif section == 'materials' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-folder2-open me-2 ic-blue"></i>Course Materials</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMaterialModal">
+        <i class="bi bi-cloud-upload me-1"></i>Upload Material
+    </button>
+</div>
+
+<div class="modal fade" id="newMaterialModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Upload Course Material</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body row g-3">
+                    <div class="col-12">
+                        <label for="mat_course" class="form-label fw-semibold">Course</label>
+                        <select id="mat_course" name="course_id" class="form-select" required>
+                            <option value="">— Select course —</option>
+                            {% for c in courses %}<option value="{{ c.pk }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="mat_title" class="form-label fw-semibold">Title</label>
+                        <input type="text" id="mat_title" name="title" class="form-control" placeholder="Material title" required>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="mat_type" class="form-label fw-semibold">Type</label>
+                        <select id="mat_type" name="material_type" class="form-select">
+                            <option value="notes">Lecture Notes</option>
+                            <option value="slides">Slides</option>
+                            <option value="past_paper">Past Paper</option>
+                            <option value="reference">Reference</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="mat_file" class="form-label fw-semibold">File</label>
+                        <input type="file" id="mat_file" name="file" class="form-control" title="Upload material file">
+                    </div>
+                    <div class="col-12">
+                        <label for="mat_desc" class="form-label fw-semibold">Description <span class="text-muted fw-normal">(optional)</span></label>
+                        <textarea id="mat_desc" name="description" class="form-control" rows="2" placeholder="Brief description..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if materials %}
+<div class="row g-3">
+    {% for m in materials %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ m.title }}</span>
+                <span class="badge bg-secondary">{{ m.course.code }}</span>
+            </div>
+            <div class="etu-card-body">
+                <p class="info-card-text mb-2">{{ m.description|truncatewords:15|default:"" }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ m.get_material_type_display }}</small>
+                    {% if m.file %}<a href="{{ m.file.url }}" class="btn btn-sm btn-outline-primary" title="Download material" aria-label="Download {{ m.title }}"><i class="bi bi-download"></i></a>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-folder2 display-4 d-block mb-3"></i>
+    <p class="lead">No materials uploaded yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ OFFICE HOURS ═══════════════════════════════════════════════ -->
+{% elif section == 'office-hours' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-clock-history me-2 ic-amber"></i>Office Hours</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newOHModal">
+        <i class="bi bi-plus-circle me-1"></i>Add Slot
+    </button>
+</div>
+
+<div class="modal fade" id="newOHModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Add Office Hour</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body row g-3">
+                    <div class="col-sm-6">
+                        <label for="oh_day" class="form-label fw-semibold">Day</label>
+                        <select id="oh_day" name="day_of_week" class="form-select">
+                            <option value="mon">Monday</option>
+                            <option value="tue">Tuesday</option>
+                            <option value="wed">Wednesday</option>
+                            <option value="thu">Thursday</option>
+                            <option value="fri">Friday</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="oh_start" class="form-label fw-semibold">Start</label>
+                        <input type="time" id="oh_start" name="start_time" class="form-control" required>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="oh_end" class="form-label fw-semibold">End</label>
+                        <input type="time" id="oh_end" name="end_time" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="oh_location" class="form-label fw-semibold">Location</label>
+                        <input type="text" id="oh_location" name="location" class="form-control" placeholder="e.g. Room 204, Main Block">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if office_hours %}
+<div class="row g-3">
+    {% for oh in office_hours %}
+    <div class="col-md-4">
+        <div class="etu-card text-center py-3">
+            <div class="fw-bold">{{ oh.get_day_of_week_display }}</div>
+            <div class="ic-amber fw-semibold">{{ oh.start_time|time:"H:i" }} – {{ oh.end_time|time:"H:i" }}</div>
+            {% if oh.location %}<small class="text-muted d-block">{{ oh.location }}</small>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-clock display-4 d-block mb-3"></i>
+    <p class="lead">No office hours set yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ TIMETABLE ══════════════════════════════════════════════════ -->
+{% elif section == 'timetable' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-calendar3 me-2 ic-green"></i>Timetable</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTTModal">
+        <i class="bi bi-plus-circle me-1"></i>Add Entry
+    </button>
+</div>
+
+<div class="modal fade" id="newTTModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Add Timetable Entry</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body row g-3">
+                    <div class="col-12">
+                        <label for="tt_course" class="form-label fw-semibold">Course</label>
+                        <select id="tt_course" name="course_id" class="form-select" required>
+                            <option value="">— Select course —</option>
+                            {% for c in courses %}<option value="{{ c.pk }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="tt_day" class="form-label fw-semibold">Day</label>
+                        <select id="tt_day" name="day_of_week" class="form-select">
+                            <option value="mon">Monday</option><option value="tue">Tuesday</option>
+                            <option value="wed">Wednesday</option><option value="thu">Thursday</option>
+                            <option value="fri">Friday</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="tt_start" class="form-label fw-semibold">Start</label>
+                        <input type="time" id="tt_start" name="start_time" class="form-control" required>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="tt_end" class="form-label fw-semibold">End</label>
+                        <input type="time" id="tt_end" name="end_time" class="form-control" required>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="tt_room" class="form-label fw-semibold">Room</label>
+                        <input type="text" id="tt_room" name="room" class="form-control" placeholder="e.g. Lecture Hall A">
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="tt_type" class="form-label fw-semibold">Activity Type</label>
+                        <select id="tt_type" name="activity_type" class="form-select">
+                            <option value="lecture">Lecture</option>
+                            <option value="tutorial">Tutorial</option>
+                            <option value="lab">Lab</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if timetable %}
+<div class="etu-card">
+    <div class="table-responsive">
+        <table class="table etu-tbl mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Day</th>
+                    <th scope="col">Course</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Room</th>
+                    <th scope="col">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in timetable %}
+                <tr>
+                    <td>{{ t.get_day_of_week_display }}</td>
+                    <td>{{ t.course.code }}</td>
+                    <td>{{ t.start_time|time:"H:i" }} – {{ t.end_time|time:"H:i" }}</td>
+                    <td>{{ t.room|default:"—" }}</td>
+                    <td>{{ t.get_activity_type_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-calendar3 display-4 d-block mb-3"></i>
+    <p class="lead">No timetable entries yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ EXAMS ══════════════════════════════════════════════════════ -->
+{% elif section == 'exams' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-clipboard-data me-2 ic-red"></i>Tests &amp; Exams</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newExamModal">
+        <i class="bi bi-plus-circle me-1"></i>Schedule Exam
+    </button>
+</div>
+
+<div class="modal fade" id="newExamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Schedule Exam / Test</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body row g-3">
+                    <div class="col-sm-6">
+                        <label for="ex_course" class="form-label fw-semibold">Course</label>
+                        <select id="ex_course" name="course_id" class="form-select" required>
+                            <option value="">— Select course —</option>
+                            {% for c in courses %}<option value="{{ c.pk }}">{{ c.code }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="ex_type" class="form-label fw-semibold">Type</label>
+                        <select id="ex_type" name="exam_type" class="form-select">
+                            <option value="test">Test</option>
+                            <option value="midterm">Midterm</option>
+                            <option value="final">Final Exam</option>
+                            <option value="quiz">Quiz</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="ex_title" class="form-label fw-semibold">Title</label>
+                        <input type="text" id="ex_title" name="title" class="form-control" placeholder="e.g. Calculus Midterm" required>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="ex_datetime" class="form-label fw-semibold">Date &amp; Time</label>
+                        <input type="datetime-local" id="ex_datetime" name="scheduled_for" class="form-control" required>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="ex_duration" class="form-label fw-semibold">Duration (min)</label>
+                        <input type="number" id="ex_duration" name="duration_minutes" class="form-control" value="120" min="15">
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="ex_room" class="form-label fw-semibold">Room</label>
+                        <input type="text" id="ex_room" name="room" class="form-control" placeholder="Room">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if exams %}
+<div class="row g-3">
+    {% for e in exams %}
+    <div class="col-md-6">
+        <div class="etu-card h-100">
+            <div class="etu-card-hdr d-flex justify-content-between">
+                <span>{{ e.title }}</span>
+                <span class="badge bg-danger">{{ e.get_exam_type_display }}</span>
+            </div>
+            <div class="etu-card-body">
+                <div class="d-flex gap-3 text-muted small">
+                    <span><i class="bi bi-calendar3 me-1"></i>{{ e.scheduled_for|date:"d M Y, H:i" }}</span>
+                    <span><i class="bi bi-clock me-1"></i>{{ e.duration_minutes }} min</span>
+                    {% if e.room %}<span><i class="bi bi-geo-alt me-1"></i>{{ e.room }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-clipboard display-4 d-block mb-3"></i>
+    <p class="lead">No exams scheduled yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ DISCUSSIONS ════════════════════════════════════════════════ -->
+{% elif section == 'discussions' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-chat-dots me-2 ic-teal"></i>Discussions</h4>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newDiscModal">
+        <i class="bi bi-plus-circle me-1"></i>New Thread
+    </button>
+</div>
+
+<div class="modal fade" id="newDiscModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Start Discussion</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body row g-3">
+                    <div class="col-12">
+                        <label for="disc_course" class="form-label fw-semibold">Course <span class="text-muted fw-normal">(optional)</span></label>
+                        <select id="disc_course" name="course_id" class="form-select" title="Select course">
+                            <option value="">— General discussion —</option>
+                            {% for c in courses %}<option value="{{ c.pk }}">{{ c.code }} — {{ c.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="disc_topic" class="form-label fw-semibold">Topic</label>
+                        <input type="text" id="disc_topic" name="topic" class="form-control" placeholder="Discussion topic" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="disc_body" class="form-label fw-semibold">Body</label>
+                        <textarea id="disc_body" name="body" class="form-control" rows="4" placeholder="Start the conversation..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" aria-label="Cancel and close">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if discussions %}
+{% for d in discussions %}
+<div class="etu-card mb-3">
+    <div class="etu-card-hdr d-flex justify-content-between">
+        <span><i class="bi bi-chat-dots me-2"></i>{{ d.topic }}</span>
+        {% if d.course %}<span class="badge bg-secondary">{{ d.course.code }}</span>{% endif %}
+    </div>
+    <div class="etu-card-body">
+        <p class="info-card-text mb-2">{{ d.body|truncatewords:30 }}</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ d.replies.count }} replies · {{ d.created_at|date:"d M Y" }}</small>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reply">
+                <input type="hidden" name="discussion_id" value="{{ d.pk }}">
+                <div class="d-flex gap-2">
+                    <input type="text" name="reply_body" class="form-control form-control-sm reply-input" placeholder="Reply..." required>
+                    <button type="submit" class="btn btn-sm btn-primary">Reply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-chat display-4 d-block mb-3"></i>
+    <p class="lead">No discussion threads yet.</p>
+</div>
+{% endif %}
+
+<!-- ══ ATTENDANCE ═════════════════════════════════════════════════ -->
+{% elif section == 'attendance' %}
+<h4 class="mb-3"><i class="bi bi-person-check me-2 ic-green"></i>Attendance</h4>
+
+<div class="etu-card mb-4">
+    <div class="etu-card-hdr"><span><i class="bi bi-funnel me-2"></i>Load Roster</span></div>
+    <div class="etu-card-body">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="load_roster">
+            <div class="row g-3 align-items-end">
+                <div class="col-sm-5">
+                    <label for="att_course" class="form-label fw-semibold">Course</label>
+                    <select id="att_course" name="course_id" class="form-select" required>
+                        <option value="">— Select course —</option>
+                        {% for c in courses %}<option value="{{ c.pk }}" {% if selected_course and selected_course.pk == c.pk %}selected{% endif %}>{{ c.code }} — {{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-sm-4">
+                    <label for="att_date" class="form-label fw-semibold">Session Date</label>
+                    <input type="date" id="att_date" name="session_date" class="form-control" value="{{ session_date_value }}">
+                </div>
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-primary w-100">Load Roster</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if attendance_roster %}
+<div class="etu-card">
+    <div class="etu-card-hdr"><span><i class="bi bi-list-check me-2"></i>Mark Attendance — {{ selected_course.code }} · {{ session_date_value }}</span></div>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save">
+        <input type="hidden" name="course_id" value="{{ selected_course.pk }}">
+        <input type="hidden" name="session_date" value="{{ session_date_value }}">
+        <div class="table-responsive">
+            <table class="table etu-tbl mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Student</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in attendance_roster %}
+                    <tr>
+                        <td>{{ reg.student.get_full_name|default:reg.student.username }}</td>
+                        <td>
+                            <select name="status_{{ reg.id }}" class="form-select form-select-sm att-status-select" title="Attendance status">
+                                <option value="present">Present</option>
+                                <option value="absent">Absent</option>
+                                <option value="late">Late</option>
+                                <option value="excused">Excused</option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="note_{{ reg.id }}" class="form-control form-control-sm" placeholder="Optional note"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i>Save Attendance</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<!-- ══ ANALYTICS ══════════════════════════════════════════════════ -->
+{% elif section == 'analytics' %}
+<h4 class="mb-4"><i class="bi bi-graph-up-arrow me-2 ic-purple"></i>Analytics</h4>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="etu-card text-center py-3">
+            <div class="stat-val">{{ analytics.students_tracked|default:"0" }}</div>
+            <div class="stat-lbl">Students Tracked</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="etu-card text-center py-3">
+            <div class="stat-val">{{ analytics.average_score|floatformat:1|default:"—" }}</div>
+            <div class="stat-lbl">Average Score</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="etu-card text-center py-3">
+            <div class="stat-val">{{ analytics.highest_score|default:"—" }}</div>
+            <div class="stat-lbl">Highest Score</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="etu-card text-center py-3">
+            <div class="stat-val">{{ analytics.attendance_records|default:"0" }}</div>
+            <div class="stat-lbl">Attendance Records</div>
+        </div>
+    </div>
+</div>
+
+{% if analytics.weak_students %}
+<div class="etu-card">
+    <div class="etu-card-hdr"><span><i class="bi bi-exclamation-triangle-fill ic-amber me-2"></i>Students Needing Support (Score &lt; 50)</span></div>
+    <div class="table-responsive">
+        <table class="table etu-tbl mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Student</th>
+                    <th scope="col">Course</th>
+                    <th scope="col">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in analytics.weak_students %}
+                <tr>
+                    <td>{{ reg.student.get_full_name|default:reg.student.username }}</td>
+                    <td>{{ reg.course.code }}</td>
+                    <td class="text-danger fw-bold">{{ reg.grade.score|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

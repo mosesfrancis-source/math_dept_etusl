@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <a href="{% url 'course_students' registration.course.id %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h4 class="mb-0">Grade Student</h4>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-person-fill me-2"></i>Student Details
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Student</dt>
+                    <dd class="col-sm-8">{{ registration.student.get_full_name }}</dd>
+                    <dt class="col-sm-4">Course</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-primary">{{ registration.course.code }}</span>
+                        {{ registration.course.name }}
+                    </dd>
+                    {% if registration.student.student_profile %}
+                    <dt class="col-sm-4">Student ID</dt>
+                    <dd class="col-sm-8"><code>{{ registration.student.student_profile.student_id }}</code></dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-pencil-square me-2"></i>Enter Grade
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Save Grade
+                        </button>
+                        <a href="{% url 'course_students' registration.course.id %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light mt-3 p-3">
+            <strong class="small mb-1 d-block">Grade Scale</strong>
+            <div class="small text-muted">
+                A (90–100, 4.0) &bull; B+ (80–89, 3.5) &bull; B (70–79, 3.0) &bull;
+                C+ (60–69, 2.5) &bull; C (50–59, 2.0) &bull; D (40–49, 1.0) &bull; F (&lt;40, 0.0)
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

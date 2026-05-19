@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Resources — ETU Portal{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-folder2-open me-2 ic-blue"></i>Resources</h4>
+    {% if request.user.role in 'admin,hod,lecturer' or request.user.is_superuser %}
+    <a href="{% url 'resource_upload' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-cloud-upload me-1"></i>Upload Resource
+    </a>
+    {% endif %}
+</div>
+
+<!-- Category filter -->
+<div class="mb-3 d-flex gap-2 flex-wrap">
+    <a href="{% url 'resources' %}" class="btn btn-sm {% if not active_cat %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+    {% for val, label in categories %}
+    <a href="?cat={{ val }}" class="btn btn-sm {% if active_cat == val %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ label }}</a>
+    {% endfor %}
+</div>
+
+{% if resources %}
+<div class="row g-3">
+    {% for res in resources %}
+    <div class="col-md-6 col-lg-4">
+        <div class="etu-card h-100">
+            <div class="etu-card-body d-flex flex-column">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <span class="resource-icon">
+                        {% if res.ext in 'pdf' %}<i class="bi bi-file-earmark-pdf-fill ic-red"></i>
+                        {% elif res.ext in 'doc,docx' %}<i class="bi bi-file-earmark-word-fill ic-blue"></i>
+                        {% elif res.ext in 'xls,xlsx' %}<i class="bi bi-file-earmark-spreadsheet-fill ic-green"></i>
+                        {% elif res.ext in 'ppt,pptx' %}<i class="bi bi-file-earmark-slides-fill ic-amber"></i>
+                        {% elif res.ext in 'zip,rar' %}<i class="bi bi-file-earmark-zip-fill ic-purple"></i>
+                        {% else %}<i class="bi bi-file-earmark-fill ic-navy"></i>{% endif %}
+                    </span>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold" style="font-size:.9rem">{{ res.title }}</div>
+                        <small class="text-muted">{{ res.get_category_display }}</small>
+                    </div>
+                </div>
+                {% if res.description %}<p class="info-card-text mb-2">{{ res.description|truncatewords:15 }}</p>{% endif %}
+                <div class="mt-auto pt-2 d-flex align-items-center justify-content-between">
+                    <small class="text-muted">{{ res.created_at|date:"d M Y" }}</small>
+                    <div class="d-flex gap-1">
+                        <a href="{{ res.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        {% if request.user.role in 'admin,hod' or res.uploaded_by == request.user or request.user.is_superuser %}
+                        <form method="post" action="{% url 'resource_delete' res.pk %}" onsubmit="return confirm('Delete this resource?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-folder2 display-4 d-block mb-3"></i>
+    <p class="lead">No resources found{% if active_cat %} in this category{% endif %}.</p>
+</div>
+{% endif %}
+
+{% endblock %}
