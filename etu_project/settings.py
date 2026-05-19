@@ -58,16 +58,18 @@ WSGI_APPLICATION = 'etu_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────
 _DATABASE_URL = os.environ.get('DATABASE_URL')
+_ON_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+
 if _DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(_DATABASE_URL, conn_max_age=600)}
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('PGDATABASE', 'etu_math_portal'),
+            'NAME': os.environ.get('PGDATABASE', 'railway' if _ON_RAILWAY else 'etu_math_portal'),
             'USER': os.environ.get('PGUSER', 'postgres'),
             'PASSWORD': os.environ.get('PGPASSWORD', os.environ.get('DB_PASSWORD', 'Mojo2023@')),
-            'HOST': os.environ.get('PGHOST', os.environ.get('DB_HOST', 'localhost')),
+            'HOST': os.environ.get('PGHOST', 'postgres.railway.internal' if _ON_RAILWAY else os.environ.get('DB_HOST', 'localhost')),
             'PORT': os.environ.get('PGPORT', '5432'),
         }
     }
