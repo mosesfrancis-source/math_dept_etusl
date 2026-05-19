@@ -62,7 +62,7 @@ DATABASES = {
         'NAME': 'etu_math_portal',
         'USER': 'postgres',
         'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
-        'HOST': os.environ.get('DB_HOST', 'postgres.railway.internal'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': '5432',
     }
 }
