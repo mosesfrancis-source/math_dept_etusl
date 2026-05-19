@@ -58,7 +58,11 @@ WSGI_APPLICATION = 'etu_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────
 _DATABASE_URL = os.environ.get('DATABASE_URL')
-_ON_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+_ON_RAILWAY = bool(
+    os.environ.get('RAILWAY_ENVIRONMENT_NAME') or
+    os.environ.get('RAILWAY_ENVIRONMENT') or
+    os.environ.get('RAILWAY_SERVICE_NAME')
+)
 
 if _DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(_DATABASE_URL, conn_max_age=600)}
