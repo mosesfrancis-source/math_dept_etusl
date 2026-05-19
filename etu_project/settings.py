@@ -11,7 +11,12 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost 127.0.0.1').split()
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'mathdeptetusl-production.up.railway.app',
+    *os.environ.get('ALLOWED_HOSTS', '').split(),
+]
 
 # ── Apps ──────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -66,11 +71,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'etu_math_portal',
-            'USER': 'postgres',
+            'NAME': os.environ.get('DB_NAME', 'etu_math_portal'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
-            'HOST': 'localhost',
-            'PORT': '5432',
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 
