@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -11,12 +10,7 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'mathdeptetusl-production.up.railway.app',
-    *os.environ.get('ALLOWED_HOSTS', '').split(),
-]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'mathdeptetusl-production.up.railway.app']
 
 # ── Apps ──────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -62,22 +56,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'etu_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────
-# Production: set DATABASE_URL env var (Railway/Render provide this automatically)
-# Development fallback: local PostgreSQL
-_db_url = os.environ.get('DATABASE_URL')
-if _db_url:
-    DATABASES = {'default': dj_database_url.parse(_db_url, conn_max_age=600)}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'etu_math_portal'),
-            'USER': os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'etu_math_portal',
+        'USER': 'postgres',
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
+        'HOST': os.environ.get('DB_HOST', 'postgres.railway.internal'),
+        'PORT': '5432',
     }
+}
 
 # ── Auth ──────────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'accounts.User'
