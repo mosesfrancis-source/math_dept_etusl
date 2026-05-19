@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,16 +57,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'etu_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'etu_math_portal',
-        'USER': 'postgres',
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': '5432',
+_DATABASE_URL = os.environ.get('DATABASE_URL')
+if _DATABASE_URL:
+    DATABASES = {'default': dj_database_url.parse(_DATABASE_URL, conn_max_age=600)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'etu_math_portal',
+            'USER': 'postgres',
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'Mojo2023@'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': '5432',
+        }
     }
-}
 
 # ── Auth ──────────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'accounts.User'
